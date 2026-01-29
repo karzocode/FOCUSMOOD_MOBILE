@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>مود التركيز | Study Mode</title>
+    
+    <!-- Mobile Optimized Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;600;700;800&family=Rubik:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for Mobile -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📱</text></svg>">
+    
+    <!-- iOS Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    
+    <!-- Android Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+</head>
+<body>
+    <!-- Mobile Status Bar -->
+    <!-- <div class="mobile-status-bar">
+        <div class="status-time" id="currentTime">12:00</div>
+        <div class="status-icons">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div> -->
+
+    <!-- Welcome Screen -->
+    <div class="welcome-screen active" id="welcomeScreen">
+        <div class="welcome-content">
+            <div class="welcome-logo">
+                <div class="logo-circle">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h1>مود التركيز</h1>
+                <p class="subtitle">تطبيق التركيز الذكي للهاتف</p>
+            </div>
+            
+            <div class="welcome-features">
+                <div class="feature">
+                    <i class="fas fa-bolt"></i>
+                    <div>
+                        <h3>تركيز سريع</h3>
+                        <p>ابدأ في ثواني بدون تعقيد</p>
+                    </div>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-brain"></i>
+                    <div>
+                        <h3>تقنيات نفسية</h3>
+                        <p>معززات تركيز متقدمة</p>
+                    </div>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-mobile-alt"></i>
+                    <div>
+                        <h3>مصمم للموبايل</h3>
+                        <p>تجربة مخصصة للشاشات الصغيرة</p>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn-start-app" id="startAppBtn">
+                <i class="fas fa-play"></i>
+                <span>ابدأ التركيز</span>
+            </button>
+            
+            <div class="language-toggle">
+                <button class="lang-option active" data-lang="ar">عربي</button>
+                <button class="lang-option" data-lang="en">English</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div class="app-container" id="appContainer">
+        <!-- Mobile Header -->
+        <header class="mobile-header">
+            <div class="header-top">
+                <button class="menu-btn" id="menuBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <div class="header-title">
+                    <h1>مود التركيز</h1>
+                    <div class="status-indicator" id="statusIndicator">
+                        <div class="status-dot"></div>
+                        <span>جاهز</span>
+                    </div>
+                </div>
+                
+                <button class="user-btn" id="userBtn">
+                    <i class="fas fa-user"></i>
+                </button>
+            </div>
+            
+            <div class="header-stats">
+                <div class="stat">
+                    <div class="stat-value" id="mobileStreak">0</div>
+                    <div class="stat-label">يوم</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="mobileSessions">0</div>
+                    <div class="stat-label">جلسة</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="mobileFocus">87%</div>
+                    <div class="stat-label">تركيز</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content (Scrollable) -->
+        <main class="mobile-main">
+            <!-- Timer Section -->
+            <section class="mobile-timer-section">
+                <div class="section-title">
+                    <h2><i class="fas fa-clock"></i> التايمر الذكي</h2>
+                    <button class="timer-help" id="timerHelp">
+                        <i class="fas fa-question-circle"></i>
+                    </button>
+                </div>
+                
+                <div class="timer-display-container">
+                    <div class="timer-display">
+                        <!-- Circular Timer -->
+                        <div class="timer-circle">
+                            <svg class="progress-ring" width="280" height="280">
+                                <circle class="progress-ring-bg" cx="140" cy="140" r="130"/>
+                                <circle class="progress-ring-fill" cx="140" cy="140" r="130"/>
+                            </svg>
+                            
+                            <div class="timer-text">
+                                <div class="time-display" id="mobileTimer">25:00</div>
+                                <div class="timer-mode" id="timerMode">تركيز</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Progress Bar -->
+                        <div class="timer-progress">
+                            <div class="progress-label">
+                                <span>متبقي</span>
+                                <span id="timeRemaining">25:00</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Timer Controls -->
+                    <div class="timer-controls">
+                        <button class="control-btn btn-play" id="mobileStartBtn">
+                            <i class="fas fa-play"></i>
+                            <span>ابدأ</span>
+                        </button>
+                        <button class="control-btn btn-pause" id="mobilePauseBtn" disabled>
+                            <i class="fas fa-pause"></i>
+                            <span>إيقاف</span>
+                        </button>
+                        <button class="control-btn btn-reset" id="mobileResetBtn">
+                            <i class="fas fa-redo"></i>
+                            <span>إعادة</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Quick Timer Options -->
+                    <div class="quick-timers">
+                        <button class="quick-timer" data-time="15">
+                            <span>15 د</span>
+                            <small>سريع</small>
+                        </button>
+                        <button class="quick-timer active" data-time="25">
+                            <span>25 د</span>
+                            <small>قاعدة</small>
+                        </button>
+                        <button class="quick-timer" data-time="45">
+                            <span>45 د</span>
+                            <small>عميق</small>
+                        </button>
+                        <button class="quick-timer" data-time="60">
+                            <span>60 د</span>
+                            <small>ماراثون</small>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Activities Section -->
+            <section class="mobile-activities">
+                <div class="section-title">
+                    <h2><i class="fas fa-tasks"></i> نوع النشاط</h2>
+                    <button class="add-activity" id="addActivityBtn">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                
+                <div class="activities-scroll">
+                    <div class="activity selected" data-activity="study">
+                        <div class="activity-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="activity-info">
+                            <h3>مذاكرة</h3>
+                            <p>تركيز أكاديمي</p>
+                        </div>
+                        <div class="activity-check">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="activity" data-activity="work">
+                        <div class="activity-icon">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                        <div class="activity-info">
+                            <h3>عمل</h3>
+                            <p>مهام مهنية</p>
+                        </div>
+                    </div>
+                    
+                    <div class="activity" data-activity="code">
+                        <div class="activity-icon">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <div class="activity-info">
+                            <h3>برمجة</h3>
+                            <p>كتابة أكواد</p>
+                        </div>
+                    </div>
+                    
+                    <div class="activity" data-activity="read">
+                        <div class="activity-icon">
+                            <i class="fas fa-book-reader"></i>
+                        </div>
+                        <div class="activity-info">
+                            <h3>قراءة</h3>
+                            <p>كتب ومقالات</p>
+                        </div>
+                    </div>
+                    
+                    <div class="activity" data-activity="gym">
+                        <div class="activity-icon">
+                            <i class="fas fa-dumbbell"></i>
+                        </div>
+                        <div class="activity-info">
+                            <h3>تمرين</h3>
+                            <p>نشاط بدني</p>
+                        </div>
+                    </div>
+                    
+                    <div class="activity" data-activity="meditate">
+                        <div class="activity-icon">
+                            <i class="fas fa-spa"></i>
+                        </div>
+                        <div class="activity-info">
+                            <h3>تأمل</h3>
+                            <p>صفاء ذهني</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Psychology Boosters -->
+            <section class="mobile-boosters">
+                <div class="section-title">
+                    <h2><i class="fas fa-brain"></i> معززات التركيز</h2>
+                    <div class="boosters-count">
+                        <span id="activeBoosters">4</span>/6
+                    </div>
+                </div>
+                
+                <div class="boosters-grid">
+                    <div class="booster active" data-booster="commitment">
+                        <div class="booster-toggle">
+                            <div class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                        <div class="booster-content">
+                            <div class="booster-icon">
+                                <i class="fas fa-handshake"></i>
+                            </div>
+                            <div>
+                                <h4>الالتزام</h4>
+                                <p>قفل التركيز</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="booster active" data-booster="flow">
+                        <div class="booster-toggle">
+                            <div class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                        <div class="booster-content">
+                            <div class="booster-icon">
+                                <i class="fas fa-water"></i>
+                            </div>
+                            <div>
+                                <h4>حماية التدفق</h4>
+                                <p>منع المقاطعات</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="booster active" data-booster="ego">
+                        <div class="booster-toggle">
+                            <div class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                        <div class="booster-content">
+                            <div class="booster-icon">
+                                <i class="fas fa-crown"></i>
+                            </div>
+                            <div>
+                                <h4>تحفيز الذات</h4>
+                                <p>تعزيز الثقة</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="booster active" data-booster="reward">
+                        <div class="booster-toggle">
+                            <div class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                        <div class="booster-content">
+                            <div class="booster-icon">
+                                <i class="fas fa-gift"></i>
+                            </div>
+                            <div>
+                                <h4>مكافأة مؤجلة</h4>
+                                <p>تحفيز بعد الإنجاز</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="booster" data-booster="anti-binge">
+                        <div class="booster-toggle">
+                            <div class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                        <div class="booster-content">
+                            <div class="booster-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div>
+                                <h4>حماية من الإفراط</h4>
+                                <p>منع الإجهاد</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="booster" data-booster="visualization">
+                        <div class="booster-toggle">
+                            <div class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                        <div class="booster-content">
+                            <div class="booster-icon">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <div>
+                                <h4>تصور النجاح</h4>
+                                <p>رؤية المستقبل</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Motivation Messages -->
+            <section class="mobile-messages">
+                <div class="section-title">
+                    <h2><i class="fas fa-comment-alt"></i> تحفيز ذكي</h2>
+                    <button class="refresh-message" id="refreshMessage">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+                
+                <div class="message-card">
+                    <div class="message-header">
+                        <div class="message-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div class="message-sender">
+                            <strong>نظام التركيز</strong>
+                            <span>الآن</span>
+                        </div>
+                    </div>
+                    <div class="message-content">
+                        <p id="currentMessage">أهلاً في مود التركيز. استعد لتركيز عميق وإنتاجية عالية!</p>
+                    </div>
+                    <div class="message-tag">
+                        <i class="fas fa-hashtag"></i>
+                        تحفيز
+                    </div>
+                </div>
+                
+                <div class="message-tips">
+                    <h3><i class="fas fa-lightbulb"></i> نصائح سريعة</h3>
+                    <div class="tips-scroll">
+                        <div class="tip">خلي الموبايل بعيد عن إيدك أثناء التركيز</div>
+                        <div class="tip">استخدم سماعات عزل صوتي</div>
+                        <div class="tip">حدد هدف واضح قبل ما تبدأ</div>
+                        <div class="tip">خذ راحة قصيرة كل 25 دقيقة</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="quick-actions-section">
+                <div class="section-title">
+                    <h2><i class="fas fa-bolt"></i> إجراءات سريعة</h2>
+                </div>
+                
+                <div class="actions-grid">
+                    <button class="action-btn" id="deepFocusBtn">
+                        <div class="action-icon">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <div class="action-text">
+                            <strong>تركيز عميق</strong>
+                            <small>كل المعززات</small>
+                        </div>
+                    </button>
+                    
+                    <button class="action-btn" id="shortBreakBtn">
+                        <div class="action-icon">
+                            <i class="fas fa-coffee"></i>
+                        </div>
+                        <div class="action-text">
+                            <strong>راحة قصيرة</strong>
+                            <small>5 دقائق</small>
+                        </div>
+                    </button>
+                    
+                    <button class="action-btn" id="focusMusicBtn">
+                        <div class="action-icon">
+                            <i class="fas fa-music"></i>
+                        </div>
+                        <div class="action-text">
+                            <strong>موسيقى تركيز</strong>
+                            <small>إعدادات صوت</small>
+                        </div>
+                    </button>
+                    
+                    <button class="action-btn" id="statsBtn">
+                        <div class="action-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div class="action-text">
+                            <strong>إحصائيات</strong>
+                            <small>تقدمك</small>
+                        </div>
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Mobile Bottom Navigation -->
+        <nav class="mobile-nav">
+            <a href="#timer" class="nav-item active">
+                <i class="fas fa-clock"></i>
+                <span>تايمر</span>
+            </a>
+            <a href="#activities" class="nav-item">
+                <i class="fas fa-tasks"></i>
+                <span>أنشطة</span>
+            </a>
+            <a href="#boosters" class="nav-item">
+                <i class="fas fa-brain"></i>
+                <span>معززات</span>
+            </a>
+            <a href="#messages" class="nav-item">
+                <i class="fas fa-comment-alt"></i>
+                <span>تحفيز</span>
+            </a>
+            <a href="#more" class="nav-item" id="moreMenuBtn">
+                <i class="fas fa-ellipsis-h"></i>
+                <span>المزيد</span>
+            </a>
+        </nav>
+
+        <!-- Focus Mode Overlay -->
+        <div class="focus-overlay" id="focusOverlay">
+            <div class="focus-header">
+                <div class="focus-time" id="focusTimer">25:00</div>
+                <div class="focus-activity" id="focusActivity">مذاكرة</div>
+            </div>
+            
+            <div class="focus-message">
+                <p id="focusMessage">خليك قفلان! مفيش رجوع دلوقتي!</p>
+            </div>
+            
+            <div class="focus-progress">
+                <div class="progress-circle">
+                    <div class="circle-bg"></div>
+                    <div class="circle-progress" id="circleProgress"></div>
+                </div>
+            </div>
+            
+            <div class="focus-controls">
+                <button class="focus-control" id="endFocusBtn">
+                    <i class="fas fa-stop"></i>
+                    <span>إنهاء</span>
+                </button>
+                <button class="focus-control" id="pauseFocusBtn">
+                    <i class="fas fa-pause"></i>
+                    <span>إيقاف مؤقت</span>
+                </button>
+            </div>
+            
+            <div class="focus-stats">
+                <div class="focus-stat">
+                    <i class="fas fa-fire"></i>
+                    <span id="focusStreak">0 يوم</span>
+                </div>
+                <div class="focus-stat">
+                    <i class="fas fa-trophy"></i>
+                    <span id="focusLevel">مبتدئ</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Side Menu -->
+    <div class="side-menu" id="sideMenu">
+        <div class="menu-header">
+            <div class="user-profile">
+                <div class="profile-pic">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="profile-info">
+                    <h3>مستخدم التركيز</h3>
+                    <p>مستوى <span id="userLevel">1</span></p>
+                </div>
+            </div>
+            <button class="close-menu" id="closeMenuBtn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="menu-items">
+            <a href="#" class="menu-item">
+                <i class="fas fa-cog"></i>
+                <span>الإعدادات</span>
+            </a>
+            <a href="#" class="menu-item">
+                <i class="fas fa-chart-line"></i>
+                <span>التقارير</span>
+            </a>
+            <a href="#" class="menu-item">
+                <i class="fas fa-trophy"></i>
+                <span>الإنجازات</span>
+            </a>
+            <a href="#" class="menu-item">
+                <i class="fas fa-moon"></i>
+                <span>الوضع الليلي</span>
+                <div class="menu-toggle">
+                    <div class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </div>
+                </div>
+            </a>
+            <a href="#" class="menu-item">
+                <i class="fas fa-bell"></i>
+                <span>الإشعارات</span>
+                <div class="menu-toggle">
+                    <div class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </div>
+                </div>
+            </a>
+            <a href="#" class="menu-item">
+                <i class="fas fa-question-circle"></i>
+                <span>المساعدة</span>
+            </a>
+        </div>
+        
+        <div class="menu-footer">
+            <div class="social-links">
+                <a href="https://wa.me/201234567890" class="social-link" target="_blank">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+                <a href="https://instagram.com/karimtamer" class="social-link" target="_blank">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <a href="mailto:karim@karzocode.com" class="social-link">
+                    <i class="fas fa-envelope"></i>
+                </a>
+            </div>
+            <div class="footer-credits">
+                <p>Karzo Code — المهندس كريم تامر</p>
+                <small>الإصدار 2.1 | مخصص للهاتف</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- More Menu (Bottom Sheet) -->
+    <div class="more-menu" id="moreMenu">
+        <div class="menu-handle"></div>
+        <div class="menu-content">
+            <h3>المزيد من الخيارات</h3>
+            <div class="more-options">
+                <button class="more-option">
+                    <i class="fas fa-history"></i>
+                    <span>سجل الجلسات</span>
+                </button>
+                <button class="more-option">
+                    <i class="fas fa-download"></i>
+                    <span>تصدير البيانات</span>
+                </button>
+                <button class="more-option">
+                    <i class="fas fa-share-alt"></i>
+                    <span>مشاركة التطبيق</span>
+                </button>
+                <button class="more-option">
+                    <i class="fas fa-star"></i>
+                    <span>تقييم التطبيق</span>
+                </button>
+                <button class="more-option">
+                    <i class="fas fa-info-circle"></i>
+                    <span>عن التطبيق</span>
+                </button>
+            </div>
+            <button class="btn-close-more" id="closeMoreBtn">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- Statistics Modal -->
+    <div class="stats-modal" id="statsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>إحصائياتك</h2>
+                <button class="close-modal" id="closeStatsBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="totalTimeStat">0</div>
+                            <div class="stat-label">دقيقة تركيز</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="streakStat">0</div>
+                            <div class="stat-label">يوم متتالي</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="productivityStat">87%</div>
+                            <div class="stat-label">إنتاجية</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="levelStat">1</div>
+                            <div class="stat-label">مستوى</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="progress-section">
+                    <h3>تقدم اليوم</h3>
+                    <div class="progress-bar large">
+                        <div class="progress-fill" style="width: 50%"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span>2 من 4 جلسات</span>
+                        <span>50%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="app.js"></script>
+    
+    <!-- Update Time Script -->
+    <script>
+        function updateCurrentTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('ar-EG', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: false 
+            });
+            const timeElement = document.getElementById('currentTime');
+            if (timeElement) {
+                timeElement.textContent = timeString;
+            }
+        }
+        
+        // Update time immediately and every minute
+        updateCurrentTime();
+        setInterval(updateCurrentTime, 60000);
+    </script>
+</body>
+</html>
