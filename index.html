@@ -1,377 +1,1 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>مود التركيز | FOCUS MODE</title>
-
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-
-  <!-- Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-  <!-- CSS -->
-  <link rel="stylesheet" href="style.css">
-
-  <!-- Theme Color -->
-  <meta name="theme-color" content="#000000">
-  
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
-</head>
-<body class="language-en">
-
-<!-- Particles Background -->
-<div class="particles" id="particles"></div>
-
-<!-- Welcome Modal -->
-<div class="modal active" id="welcome">
-  <div class="modal-content">
-    <h2><span class="gradient">🧠 FOCUS ZONE</span></h2>
-    <p class="en">Ready for ultra deep focus mode?</p>
-    <p class="ar">جاهز لمود التركيز الفائق؟</p>
-    
-    <div class="modal-settings">
-      <div class="setting">
-        <span class="en">Auto-start next session</span>
-        <span class="ar">بدء الجلسة التالية تلقائياً</span>
-        <label class="switch">
-          <input type="checkbox" id="auto-start">
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="setting">
-        <span class="en">Sounds</span>
-        <span class="ar">أصوات</span>
-        <label class="switch">
-          <input type="checkbox" id="sounds-toggle" checked>
-          <span class="slider"></span>
-        </label>
-      </div>
-    </div>
-
-    <div class="modal-buttons">
-      <button id="enter" class="primary">🚀 <span class="en">Start Focus</span><span class="ar">ابدأ التركيز</span></button>
-      <button id="cancel" class="secondary"><span class="en">Not Now</span><span class="ar">مش دلوقتي</span></button>
-    </div>
-  </div>
-</div>
-
-<!-- Settings Modal -->
-<div class="modal" id="settings">
-  <div class="modal-content">
-    <h2><i class="fas fa-cog"></i> <span class="en">Settings</span><span class="ar">الإعدادات</span></h2>
-    
-    <div class="settings-group">
-      <h3 class="en">Timer Settings</h3>
-      <h3 class="ar">إعدادات المؤقت</h3>
-      
-      <div class="setting-item">
-        <label class="en">Pomodoro Duration (minutes)</label>
-        <label class="ar">مدة البومودورو (دقائق)</label>
-        <input type="number" id="pomodoro-duration" min="1" max="120" value="25">
-      </div>
-      
-      <div class="setting-item">
-        <label class="en">Break Duration (minutes)</label>
-        <label class="ar">مدة الراحة (دقائق)</label>
-        <input type="number" id="break-duration" min="1" max="60" value="5">
-      </div>
-      
-      <div class="setting-item">
-        <label class="en">Long Break (every X sessions)</label>
-        <label class="ar">راحة طويلة (كل X جلسة)</label>
-        <input type="number" id="long-break-interval" min="1" max="10" value="4">
-      </div>
-    </div>
-    
-    <div class="settings-group">
-      <h3 class="en">Preferences</h3>
-      <h3 class="ar">التفضيلات</h3>
-      
-      <div class="setting-item">
-        <label class="en">Dark Mode</label>
-        <label class="ar">الوضع الداكن</label>
-        <label class="switch">
-          <input type="checkbox" id="dark-mode" checked>
-          <span class="slider"></span>
-        </label>
-      </div>
-      
-      <div class="setting-item">
-        <label class="en">Notifications</label>
-        <label class="ar">الإشعارات</label>
-        <label class="switch">
-          <input type="checkbox" id="notifications-toggle">
-          <span class="slider"></span>
-        </label>
-      </div>
-      
-      <div class="setting-item">
-        <label class="en">Auto-break</label>
-        <label class="ar">راحة تلقائية</label>
-        <label class="switch">
-          <input type="checkbox" id="auto-break">
-          <span class="slider"></span>
-        </label>
-      </div>
-    </div>
-
-    <div class="modal-buttons">
-      <button id="save-settings" class="primary"><span class="en">Save</span><span class="ar">حفظ</span></button>
-      <button id="close-settings" class="secondary"><span class="en">Close</span><span class="ar">إغلاق</span></button>
-    </div>
-  </div>
-</div>
-
-<!-- Stats Modal -->
-<div class="modal" id="stats">
-  <div class="modal-content">
-    <h2><i class="fas fa-chart-line"></i> <span class="en">Statistics</span><span class="ar">الإحصائيات</span></h2>
-    
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-value" id="total-sessions">0</div>
-        <div class="stat-label en">Sessions</div>
-        <div class="stat-label ar">جلسات</div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-value" id="total-focus-time">0h 0m</div>
-        <div class="stat-label en">Focus Time</div>
-        <div class="stat-label ar">وقت التركيز</div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-value" id="today-focus">0m</div>
-        <div class="stat-label en">Today</div>
-        <div class="stat-label ar">اليوم</div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-value" id="streak">0</div>
-        <div class="stat-label en">Day Streak</div>
-        <div class="stat-label ar">تتابع الأيام</div>
-      </div>
-    </div>
-    
-    <div class="modal-buttons">
-      <button id="reset-stats" class="secondary"><span class="en">Reset Stats</span><span class="ar">مسح الإحصائيات</span></button>
-      <button id="close-stats" class="secondary"><span class="en">Close</span><span class="ar">إغلاق</span></button>
-    </div>
-  </div>
-</div>
-
-<!-- Main Container -->
-<div class="container">
-  <!-- Header -->
-  <header>
-    <div class="logo">
-      <i class="fas fa-brain"></i>
-      <div>
-        <h1>FOCUS<span class="gradient">MODE</span></h1>
-        <small class="en">Advanced Focus Timer</small>
-        <small class="ar">مؤقت تركيز متقدم</small>
-        <div class="session-counter" id="session-counter">
-          <span class="en">Session: <span id="current-session">1</span>/<span id="total-sessions-count">4</span></span>
-          <span class="ar">الجلسة: <span id="current-session-ar">1</span>/<span id="total-sessions-count-ar">4</span></span>
-        </div>
-      </div>
-    </div>
-
-    <div class="header-controls">
-      <button class="icon-btn" id="stats-btn" title="Statistics">
-        <i class="fas fa-chart-line"></i>
-      </button>
-      <button class="icon-btn" id="settings-btn" title="Settings">
-        <i class="fas fa-cog"></i>
-      </button>
-      <div class="lang-switch">
-        <button class="lang active" data-lang="en">EN</button>
-        <button class="lang" data-lang="ar">AR</button>
-      </div>
-    </div>
-  </header>
-
-  <!-- Timer Section -->
-  <section class="timer-section">
-    <div class="timer-circle">
-      <svg viewBox="0 0 200 200">
-        <defs>
-          <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#00f2fe" />
-            <stop offset="50%" stop-color="#4facfe" />
-            <stop offset="100%" stop-color="#ff00ff" />
-          </linearGradient>
-        </defs>
-        <circle class="bg" cx="100" cy="100" r="90"/>
-        <circle class="progress" cx="100" cy="100" r="90"/>
-      </svg>
-
-      <div class="time">
-        <span class="min">25</span>
-        <span class="sep">:</span>
-        <span class="sec">00</span>
-      </div>
-
-      <div class="timer-status">
-        <div class="mode-label en" id="mode-label-en">FOCUS SESSION</div>
-        <div class="mode-label ar" id="mode-label-ar">جلسة تركيز</div>
-        <div class="time-remaining">
-          <span class="en" id="time-remaining-en">25:00 remaining</span>
-          <span class="ar" id="time-remaining-ar">25:00 متبقي</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Timer Controls -->
-    <div class="controls">
-      <button id="start" class="btn primary">
-        <i class="fas fa-play"></i> 
-        <span class="en">START</span>
-        <span class="ar">ابدأ</span>
-      </button>
-      <button id="pause" class="btn" disabled>
-        <i class="fas fa-pause"></i> 
-        <span class="en">PAUSE</span>
-        <span class="ar">إيقاف</span>
-      </button>
-      <button id="skip" class="btn secondary">
-        <i class="fas fa-forward"></i> 
-        <span class="en">SKIP</span>
-        <span class="ar">تخطي</span>
-      </button>
-      <button id="reset" class="btn secondary">
-        <i class="fas fa-redo"></i> 
-        <span class="en">RESET</span>
-        <span class="ar">إعادة</span>
-      </button>
-    </div>
-
-    <!-- Mode Selection -->
-    <div class="mode-buttons">
-      <button class="mode active" data-mode="pomodoro">
-        <i class="fas fa-tomato"></i>
-        <span class="en">Pomodoro</span>
-        <span class="ar">بومودورو</span>
-      </button>
-      <button class="mode" data-mode="stopwatch">
-        <i class="fas fa-stopwatch"></i>
-        <span class="en">Stopwatch</span>
-        <span class="ar">ساعة توقيت</span>
-      </button>
-      <button class="mode" data-mode="custom">
-        <i class="fas fa-sliders-h"></i>
-        <span class="en">Custom</span>
-        <span class="ar">مخصص</span>
-      </button>
-      <button class="mode" data-mode="break">
-        <i class="fas fa-coffee"></i>
-        <span class="en">Break</span>
-        <span class="ar">راحة</span>
-      </button>
-    </div>
-
-    <!-- Quick Time Presets -->
-    <div class="presets">
-      <button class="preset" data-minutes="15">15<span class="en">min</span><span class="ar">د</span></button>
-      <button class="preset" data-minutes="25">25<span class="en">min</span><span class="ar">د</span></button>
-      <button class="preset" data-minutes="45">45<span class="en">min</span><span class="ar">د</span></button>
-      <button class="preset" data-minutes="60">60<span class="en">min</span><span class="ar">د</span></button>
-      <button class="preset" data-minutes="90">90<span class="en">min</span><span class="ar">د</span></button>
-    </div>
-  </section>
-
-  <!-- Stats Bar -->
-  <div class="stats-bar">
-    <div class="stat-item">
-      <i class="fas fa-clock"></i>
-      <span class="en">Today:</span>
-      <span class="ar">اليوم:</span>
-      <span id="today-time">0m</span>
-    </div>
-    <div class="stat-item">
-      <i class="fas fa-fire"></i>
-      <span class="en">Streak:</span>
-      <span class="ar">التتابع:</span>
-      <span id="streak-display">0</span>
-    </div>
-    <div class="stat-item">
-      <i class="fas fa-brain"></i>
-      <span class="en">Focus Level:</span>
-      <span class="ar">مستوى التركيز:</span>
-      <span id="focus-level">0%</span>
-    </div>
-  </div>
-
-  <!-- Message Box -->
-  <section class="message-box">
-    <div class="message-content">
-      <p id="msg-en">Neural pathways activating...</p>
-      <p id="msg-ar" class="ar">المسارات العصبية بتتفعل...</p>
-    </div>
-    <div class="message-controls">
-      <button id="prev-msg" class="icon-btn"><i class="fas fa-backward"></i></button>
-      <button id="next-msg" class="icon-btn"><i class="fas fa-forward"></i></button>
-    </div>
-  </section>
-
-  <!-- Task List -->
-  <section class="task-section">
-    <div class="task-header">
-      <h3><i class="fas fa-tasks"></i> <span class="en">Tasks</span><span class="ar">المهام</span></h3>
-      <button id="add-task" class="icon-btn small">
-        <i class="fas fa-plus"></i>
-      </button>
-    </div>
-    <div class="tasks-list" id="tasks-list">
-      <!-- Tasks will be added here -->
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer>
-    <div class="footer-content">
-      <p>© 2026 <span class="gradient">Karzo Code</span> – <span class="en">Engineer Kariem Tamer</span><span class="ar">المهندس كريم تامر</span></p>
-      <div class="social-links">
-        <button class="social-btn" id="share-btn" title="Share">
-          <i class="fas fa-share-alt"></i>
-        </button>
-        <button class="social-btn" id="fullscreen-btn" title="Fullscreen">
-          <i class="fas fa-expand"></i>
-        </button>
-        <button class="social-btn" id="music-btn" title="Background Music">
-          <i class="fas fa-music"></i>
-        </button>
-      </div>
-    </div>
-  </footer>
-</div>
-
-<!-- Audio Elements -->
-<audio id="start-sound" preload="auto">
-  <source src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3" type="audio/mpeg">
-</audio>
-<audio id="pause-sound" preload="auto">
-  <source src="https://assets.mixkit.co/sfx/preview/mixkit-game-show-clock-countdown-946.mp3" type="audio/mpeg">
-</audio>
-<audio id="complete-sound" preload="auto">
-  <source src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3" type="audio/mpeg">
-</audio>
-<audio id="click-sound" preload="auto">
-  <source src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" type="audio/mpeg">
-</audio>
-<audio id="break-sound" preload="auto">
-  <source src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3" type="audio/mpeg">
-</audio>
-<audio id="focus-music" loop preload="auto">
-  <source src="https://assets.mixkit.co/music/preview/mixkit-deep-ambient-476.mp3" type="audio/mpeg">
-</audio>
-
-<!-- JavaScript -->
-<script src="app.js"></script>
-</body>
-</html>
+<!DOCTYPE html><html lang="en" dir="ltr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>مود التركيز | FOCUS MODE</title><!-- Fonts --><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"><!-- Icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"><!-- CSS --><link rel="stylesheet" href="style.css"><!-- Theme Color --><meta name="theme-color" content="#000000"><!-- Favicon --><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>"></head><body class="language-en"><!-- Particles Background --><div class="particles" id="particles"></div><!-- Welcome Modal --><div class="modal active" id="welcome"><div class="modal-content"><h2><span class="gradient">🧠 FOCUS ZONE</span></h2><p class="en">Ready for ultra deep focus mode?</p><p class="ar">جاهز لمود التركيز الفائق؟</p><div class="modal-settings"><div class="setting"><span class="en">Auto-start next session</span> <span class="ar">بدء الجلسة التالية تلقائياً</span> <label class="switch"><input type="checkbox" id="auto-start"> <span class="slider"></span></label></div><div class="setting"><span class="en">Sounds</span> <span class="ar">أصوات</span> <label class="switch"><input type="checkbox" id="sounds-toggle" checked> <span class="slider"></span></label></div></div><div class="modal-buttons"><button id="enter" class="primary">🚀 <span class="en">Start Focus</span><span class="ar">ابدأ التركيز</span></button> <button id="cancel" class="secondary"><span class="en">Not Now</span><span class="ar">مش دلوقتي</span></button></div></div></div><!-- Settings Modal --><div class="modal" id="settings"><div class="modal-content"><h2><i class="fas fa-cog"></i> <span class="en">Settings</span><span class="ar">الإعدادات</span></h2><div class="settings-group"><h3 class="en">Timer Settings</h3><h3 class="ar">إعدادات المؤقت</h3><div class="setting-item"><label class="en">Pomodoro Duration (minutes)</label> <label class="ar">مدة البومودورو (دقائق)</label> <input type="number" id="pomodoro-duration" min="1" max="120" value="25"></div><div class="setting-item"><label class="en">Break Duration (minutes)</label> <label class="ar">مدة الراحة (دقائق)</label> <input type="number" id="break-duration" min="1" max="60" value="5"></div><div class="setting-item"><label class="en">Long Break (every X sessions)</label> <label class="ar">راحة طويلة (كل X جلسة)</label> <input type="number" id="long-break-interval" min="1" max="10" value="4"></div></div><div class="settings-group"><h3 class="en">Preferences</h3><h3 class="ar">التفضيلات</h3><div class="setting-item"><label class="en">Dark Mode</label> <label class="ar">الوضع الداكن</label> <label class="switch"><input type="checkbox" id="dark-mode" checked> <span class="slider"></span></label></div><div class="setting-item"><label class="en">Notifications</label> <label class="ar">الإشعارات</label> <label class="switch"><input type="checkbox" id="notifications-toggle"> <span class="slider"></span></label></div><div class="setting-item"><label class="en">Auto-break</label> <label class="ar">راحة تلقائية</label> <label class="switch"><input type="checkbox" id="auto-break"> <span class="slider"></span></label></div></div><div class="modal-buttons"><button id="save-settings" class="primary"><span class="en">Save</span><span class="ar">حفظ</span></button> <button id="close-settings" class="secondary"><span class="en">Close</span><span class="ar">إغلاق</span></button></div></div></div><!-- Stats Modal --><div class="modal" id="stats"><div class="modal-content"><h2><i class="fas fa-chart-line"></i> <span class="en">Statistics</span><span class="ar">الإحصائيات</span></h2><div class="stats-grid"><div class="stat-card"><div class="stat-value" id="total-sessions">0</div><div class="stat-label en">Sessions</div><div class="stat-label ar">جلسات</div></div><div class="stat-card"><div class="stat-value" id="total-focus-time">0h 0m</div><div class="stat-label en">Focus Time</div><div class="stat-label ar">وقت التركيز</div></div><div class="stat-card"><div class="stat-value" id="today-focus">0m</div><div class="stat-label en">Today</div><div class="stat-label ar">اليوم</div></div><div class="stat-card"><div class="stat-value" id="streak">0</div><div class="stat-label en">Day Streak</div><div class="stat-label ar">تتابع الأيام</div></div></div><div class="modal-buttons"><button id="reset-stats" class="secondary"><span class="en">Reset Stats</span><span class="ar">مسح الإحصائيات</span></button> <button id="close-stats" class="secondary"><span class="en">Close</span><span class="ar">إغلاق</span></button></div></div></div><!-- Main Container --><div class="container"><!-- Header --><header><div class="logo"><i class="fas fa-brain"></i><div><h1>FOCUS<span class="gradient">MODE</span></h1><small class="en">Advanced Focus Timer</small> <small class="ar">مؤقت تركيز متقدم</small><div class="session-counter" id="session-counter"><span class="en">Session: <span id="current-session">1</span>/<span id="total-sessions-count">4</span></span> <span class="ar">الجلسة: <span id="current-session-ar">1</span>/<span id="total-sessions-count-ar">4</span></span></div></div></div><div class="header-controls"><button class="icon-btn" id="stats-btn" title="Statistics"><i class="fas fa-chart-line"></i></button> <button class="icon-btn" id="settings-btn" title="Settings"><i class="fas fa-cog"></i></button><div class="lang-switch"><button class="lang active" data-lang="en">EN</button> <button class="lang" data-lang="ar">AR</button></div></div></header><!-- Timer Section --><section class="timer-section"><div class="timer-circle"><svg viewBox="0 0 200 200"><defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00f2fe"/><stop offset="50%" stop-color="#4facfe"/><stop offset="100%" stop-color="#ff00ff"/></linearGradient></defs><circle class="bg" cx="100" cy="100" r="90"/><circle class="progress" cx="100" cy="100" r="90"/></svg><div class="time"><span class="min">25</span> <span class="sep">:</span> <span class="sec">00</span></div><div class="timer-status"><div class="mode-label en" id="mode-label-en">FOCUS SESSION</div><div class="mode-label ar" id="mode-label-ar">جلسة تركيز</div><div class="time-remaining"><span class="en" id="time-remaining-en">25:00 remaining</span> <span class="ar" id="time-remaining-ar">25:00 متبقي</span></div></div></div><!-- Timer Controls --><div class="controls"><button id="start" class="btn primary"><i class="fas fa-play"></i> <span class="en">START</span> <span class="ar">ابدأ</span></button> <button id="pause" class="btn" disabled><i class="fas fa-pause"></i> <span class="en">PAUSE</span> <span class="ar">إيقاف</span></button> <button id="skip" class="btn secondary"><i class="fas fa-forward"></i> <span class="en">SKIP</span> <span class="ar">تخطي</span></button> <button id="reset" class="btn secondary"><i class="fas fa-redo"></i> <span class="en">RESET</span> <span class="ar">إعادة</span></button></div><!-- Mode Selection --><div class="mode-buttons"><button class="mode active" data-mode="pomodoro"><i class="fas fa-tomato"></i> <span class="en">Pomodoro</span> <span class="ar">بومودورو</span></button> <button class="mode" data-mode="stopwatch"><i class="fas fa-stopwatch"></i> <span class="en">Stopwatch</span> <span class="ar">ساعة توقيت</span></button> <button class="mode" data-mode="custom"><i class="fas fa-sliders-h"></i> <span class="en">Custom</span> <span class="ar">مخصص</span></button> <button class="mode" data-mode="break"><i class="fas fa-coffee"></i> <span class="en">Break</span> <span class="ar">راحة</span></button></div><!-- Quick Time Presets --><div class="presets"><button class="preset" data-minutes="15">15<span class="en">min</span><span class="ar">د</span></button> <button class="preset" data-minutes="25">25<span class="en">min</span><span class="ar">د</span></button> <button class="preset" data-minutes="45">45<span class="en">min</span><span class="ar">د</span></button> <button class="preset" data-minutes="60">60<span class="en">min</span><span class="ar">د</span></button> <button class="preset" data-minutes="90">90<span class="en">min</span><span class="ar">د</span></button></div></section><!-- Stats Bar --><div class="stats-bar"><div class="stat-item"><i class="fas fa-clock"></i> <span class="en">Today:</span> <span class="ar">اليوم:</span> <span id="today-time">0m</span></div><div class="stat-item"><i class="fas fa-fire"></i> <span class="en">Streak:</span> <span class="ar">التتابع:</span> <span id="streak-display">0</span></div><div class="stat-item"><i class="fas fa-brain"></i> <span class="en">Focus Level:</span> <span class="ar">مستوى التركيز:</span> <span id="focus-level">0%</span></div></div><!-- Message Box --><section class="message-box"><div class="message-content"><p id="msg-en">Neural pathways activating...</p><p id="msg-ar" class="ar">المسارات العصبية بتتفعل...</p></div><div class="message-controls"><button id="prev-msg" class="icon-btn"><i class="fas fa-backward"></i></button> <button id="next-msg" class="icon-btn"><i class="fas fa-forward"></i></button></div></section><!-- Task List --><section class="task-section"><div class="task-header"><h3><i class="fas fa-tasks"></i> <span class="en">Tasks</span><span class="ar">المهام</span></h3><button id="add-task" class="icon-btn small"><i class="fas fa-plus"></i></button></div><div class="tasks-list" id="tasks-list"><!-- Tasks will be added here --></div></section><!-- Footer --><footer><div class="footer-content"><p>© 2026 <span class="gradient">Karzo Code</span> – <span class="en">Engineer Kariem Tamer</span><span class="ar">المهندس كريم تامر</span></p><div class="social-links"><button class="social-btn" id="share-btn" title="Share"><i class="fas fa-share-alt"></i></button> <button class="social-btn" id="fullscreen-btn" title="Fullscreen"><i class="fas fa-expand"></i></button> <button class="social-btn" id="music-btn" title="Background Music"><i class="fas fa-music"></i></button></div></div></footer></div><!-- Audio Elements --><audio id="start-sound" preload="auto"><source src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3" type="audio/mpeg"></audio><audio id="pause-sound" preload="auto"><source src="https://assets.mixkit.co/sfx/preview/mixkit-game-show-clock-countdown-946.mp3" type="audio/mpeg"></audio><audio id="complete-sound" preload="auto"><source src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3" type="audio/mpeg"></audio><audio id="click-sound" preload="auto"><source src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" type="audio/mpeg"></audio><audio id="break-sound" preload="auto"><source src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3" type="audio/mpeg"></audio><audio id="focus-music" loop preload="auto"><source src="https://assets.mixkit.co/music/preview/mixkit-deep-ambient-476.mp3" type="audio/mpeg"></audio><!-- JavaScript --><script src="app.js"></script></body></html>
