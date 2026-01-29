@@ -1,1643 +1,1160 @@
-// ===== STUDY MODE MOBILE EDITION - FIXED VERSION =====
-// تم إصلاح جميع التفاعلات وتحسين الـ Responsiveness
+// Focus Mode Pro - 50+ Features - Engineer Kariem Tamer
 
-'use strict';
-
-// ===== MOBILE STATE =====
-const MobileState = {
-    isFocusMode: false,
-    isTimerRunning: false,
-    timerMode: 'focus',
-    focusDuration: 25 * 60,
-    breakDuration: 5 * 60,
-    currentTime: 25 * 60,
-    timerInterval: null,
-    currentActivity: 'study',
-    language: 'ar',
-    darkMode: true,
-    notifications: true,
-    
-    psychology: {
-        commitment: true,
-        flow: true,
-        ego: true,
-        reward: true,
-        antiBinge: false,
-        visualization: false
-    },
-    
-    stats: {
-        streak: 7,
-        totalSessions: 42,
-        totalMinutes: 1050,
-        productivity: 87,
-        level: 3,
-        todaySessions: 2,
-        todayMinutes: 50
-    },
-    
-    messages: {
-        ar: [
-            "يلا بطل! ركّز وانت قفلان!",
-            "مفيش رجوع دلوقتي! استمر!",
-            "خليك جامد، الوقت بتاعك!",
-            "كل دقيقة بتقربك من الهدف!",
-            "انت اسطورة تركيز! حطمها!",
-            "محدش يقدر يوقفك دلوقتي!",
-            "عقلك شغال بأقصى طاقة!",
-            "الضغط بيعمل الماس! استمر!",
-            "انت بتبني مستقبل جامد!",
-            "نفسك في المستقبل بتهنيك!"
-        ],
-        en: [
-            "Let's go champ! Stay focused!",
-            "No turning back now! Keep going!",
-            "Stay strong, this is your time!",
-            "Every minute brings you closer!",
-            "You're a focus legend! Crush it!",
-            "No one can stop you now!",
-            "Your brain is at peak performance!",
-            "Pressure makes diamonds! Keep going!",
-            "You're building an epic future!",
-            "Your future self thanks you!"
-        ]
-    }
-};
+// ===== GLOBAL VARIABLES =====
+let timerInterval = null;
+let seconds = 25 * 60;
+let isRunning = false;
+let currentMode = 'pomodoro';
+let sessionsCompleted = 0;
+let currentSession = 1;
+let totalSessions = 4;
+let isBreakTime = false;
+let totalFocusTime = 0;
+let todayFocusTime = 0;
+let dayStreak = 0;
+let lastActiveDate = null;
+let soundsEnabled = true;
+let notificationsEnabled = false;
+let autoStartNext = false;
+let autoBreakEnabled = true;
+let darkMode = true;
+let backgroundMusicEnabled = false;
+let tasks = [];
+let currentTaskId = 1;
+let isFullscreen = false;
+let focusLevel = 0;
 
 // ===== DOM ELEMENTS =====
-const mobileDOM = {
-    welcomeScreen: document.getElementById('welcomeScreen'),
-    appContainer: document.getElementById('appContainer'),
-    focusOverlay: document.getElementById('focusOverlay'),
+const elements = {
+    // Timer
+    min: document.querySelector('.min'),
+    sec: document.querySelector('.sec'),
+    progress: document.querySelector('.progress'),
     
-    startAppBtn: document.getElementById('startAppBtn'),
-    menuBtn: document.getElementById('menuBtn'),
-    closeMenuBtn: document.getElementById('closeMenuBtn'),
-    moreMenuBtn: document.getElementById('moreMenuBtn'),
-    closeMoreBtn: document.getElementById('closeMoreBtn'),
-    closeStatsBtn: document.getElementById('closeStatsBtn'),
+    // Buttons
+    start: document.getElementById('start'),
+    pause: document.getElementById('pause'),
+    reset: document.getElementById('reset'),
+    skip: document.getElementById('skip'),
     
-    mobileStartBtn: document.getElementById('mobileStartBtn'),
-    mobilePauseBtn: document.getElementById('mobilePauseBtn'),
-    mobileResetBtn: document.getElementById('mobileResetBtn'),
-    mobileTimer: document.getElementById('mobileTimer'),
-    timeRemaining: document.getElementById('timeRemaining'),
-    progressFill: document.getElementById('progressFill'),
+    // Mode
+    modeBtns: document.querySelectorAll('.mode'),
+    modeLabelEn: document.getElementById('mode-label-en'),
+    modeLabelAr: document.getElementById('mode-label-ar'),
+    timeRemainingEn: document.getElementById('time-remaining-en'),
+    timeRemainingAr: document.getElementById('time-remaining-ar'),
     
-    endFocusBtn: document.getElementById('endFocusBtn'),
-    pauseFocusBtn: document.getElementById('pauseFocusBtn'),
-    focusTimer: document.getElementById('focusTimer'),
-    focusMessage: document.getElementById('focusMessage'),
-    circleProgress: document.getElementById('circleProgress'),
+    // Language
+    langBtns: document.querySelectorAll('.lang'),
     
-    activities: document.querySelectorAll('.activity'),
-    addActivityBtn: document.getElementById('addActivityBtn'),
+    // Messages
+    msgEn: document.getElementById('msg-en'),
+    msgAr: document.getElementById('msg-ar'),
+    nextMsg: document.getElementById('next-msg'),
+    prevMsg: document.getElementById('prev-msg'),
     
-    boosters: document.querySelectorAll('.booster'),
-    boosterToggles: document.querySelectorAll('.booster-toggle input'),
-    activeBoosters: document.getElementById('activeBoosters'),
+    // Modals
+    welcome: document.getElementById('welcome'),
+    settings: document.getElementById('settings'),
+    stats: document.getElementById('stats'),
     
-    currentMessage: document.getElementById('currentMessage'),
-    refreshMessage: document.getElementById('refreshMessage'),
+    // Modal Buttons
+    enter: document.getElementById('enter'),
+    cancel: document.getElementById('cancel'),
+    settingsBtn: document.getElementById('settings-btn'),
+    statsBtn: document.getElementById('stats-btn'),
+    saveSettings: document.getElementById('save-settings'),
+    closeSettings: document.getElementById('close-settings'),
+    closeStats: document.getElementById('close-stats'),
+    resetStats: document.getElementById('reset-stats'),
     
-    deepFocusBtn: document.getElementById('deepFocusBtn'),
-    shortBreakBtn: document.getElementById('shortBreakBtn'),
-    focusMusicBtn: document.getElementById('focusMusicBtn'),
-    statsBtn: document.getElementById('statsBtn'),
+    // Presets
+    presets: document.querySelectorAll('.preset'),
     
-    quickTimers: document.querySelectorAll('.quick-timer'),
+    // Stats
+    sessionCounter: document.getElementById('session-counter'),
+    currentSession: document.getElementById('current-session'),
+    currentSessionAr: document.getElementById('current-session-ar'),
+    totalSessionsCount: document.getElementById('total-sessions-count'),
+    totalSessionsCountAr: document.getElementById('total-sessions-count-ar'),
+    todayTime: document.getElementById('today-time'),
+    streakDisplay: document.getElementById('streak-display'),
+    focusLevel: document.getElementById('focus-level'),
     
-    mobileStreak: document.getElementById('mobileStreak'),
-    mobileSessions: document.getElementById('mobileSessions'),
-    mobileFocus: document.getElementById('mobileFocus'),
-    focusStreak: document.getElementById('focusStreak'),
-    focusLevel: document.getElementById('focusLevel'),
+    // Tasks
+    tasksList: document.getElementById('tasks-list'),
+    addTask: document.getElementById('add-task'),
     
-    sideMenu: document.getElementById('sideMenu'),
-    moreMenu: document.getElementById('moreMenu'),
-    statsModal: document.getElementById('statsModal'),
+    // Audio
+    startSound: document.getElementById('start-sound'),
+    pauseSound: document.getElementById('pause-sound'),
+    completeSound: document.getElementById('complete-sound'),
+    clickSound: document.getElementById('click-sound'),
+    breakSound: document.getElementById('break-sound'),
+    focusMusic: document.getElementById('focus-music'),
     
-    totalTimeStat: document.getElementById('totalTimeStat'),
-    streakStat: document.getElementById('streakStat'),
-    productivityStat: document.getElementById('productivityStat'),
-    levelStat: document.getElementById('levelStat'),
+    // Settings Inputs
+    pomodoroDuration: document.getElementById('pomodoro-duration'),
+    breakDuration: document.getElementById('break-duration'),
+    longBreakInterval: document.getElementById('long-break-interval'),
+    autoStart: document.getElementById('auto-start'),
+    soundsToggle: document.getElementById('sounds-toggle'),
+    darkMode: document.getElementById('dark-mode'),
+    notificationsToggle: document.getElementById('notifications-toggle'),
+    autoBreak: document.getElementById('auto-break'),
     
-    langOptions: document.querySelectorAll('.lang-option'),
-    timerHelp: document.getElementById('timerHelp'),
-    timerMode: document.getElementById('timerMode'),
-    userLevel: document.getElementById('userLevel'),
-    userBtn: document.getElementById('userBtn')
+    // Stats Modal
+    totalSessionsStat: document.getElementById('total-sessions'),
+    totalFocusTimeStat: document.getElementById('total-focus-time'),
+    todayFocusStat: document.getElementById('today-focus'),
+    streakStat: document.getElementById('streak'),
+    
+    // Footer Buttons
+    shareBtn: document.getElementById('share-btn'),
+    fullscreenBtn: document.getElementById('fullscreen-btn'),
+    musicBtn: document.getElementById('music-btn')
 };
 
-// ===== INITIALIZATION =====
-function initMobileApp() {
-    console.log('📱 تطبيق مود التركيز يعمل الآن...');
-    
-    // منع التمرير الأفقي
-    preventHorizontalScroll();
-    
-    // تحميل الحالة
-    loadMobileState();
-    
-    // إعداد الأحداث
-    setupMobileEvents();
-    
-    // تهيئة الواجهة
-    initMobileUI();
-    
-    // إعداد الإيماءات
-    setupMobileGestures();
-    
-    // بدء الخدمات
-    startMobileServices();
-    
-    console.log('✅ التطبيق جاهز للاستخدام');
+// ===== MESSAGES DATABASE =====
+const messages = {
+    en: [
+        "Neural pathways activating...",
+        "Entering deep focus zone...",
+        "Your brain is getting sharper...",
+        "Stay locked in – greatness awaits",
+        "One more focused minute = one step closer",
+        "Flow state activated",
+        "Distractions fading away...",
+        "Productivity level: MAXIMUM",
+        "Time distortion engaged",
+        "Focus level: Quantum",
+        "Mind like a laser beam",
+        "No distractions, only progress",
+        "Entering the productivity matrix",
+        "Brain waves synchronized",
+        "Concentration at peak levels",
+        "Thoughts flowing like electricity",
+        "Mental clarity achieved",
+        "Focus fortress activated",
+        "Distraction shield: 100%",
+        "Cognitive performance: Optimal"
+    ],
+    ar: [
+        "المسارات العصبية بتتفعل...",
+        "داخل منطقة التركيز العميق...",
+        "مخك بيتقوى دلوقتي...",
+        "خليك مركز – العظمة جاية",
+        "دقيقة تركيز زيادة = خطوة أقرب",
+        "حالة التدفق مُفعَّلة",
+        "المشتتات بتختفي...",
+        "مستوى الإنتاجية: أقصى درجة",
+        "تشويه الزمن مُفعَّل",
+        "مستوى التركيز: كمي",
+        "العقل مثل شعاع الليزر",
+        "لا مشتتات، فقط تقدم",
+        "داخل مصفوفة الإنتاجية",
+        "موجات الدماغ متزامنة",
+        "التركيز في أعلى المستويات",
+        "الأفكار تتدفق مثل الكهرباء",
+        "الوضوح العقلي مُحقق",
+        "قلعة التركيز مُفعَّلة",
+        "درع التشتيت: 100%",
+        "الأداء المعرفي: مثالي"
+    ]
+};
+
+let currentMessageIndex = 0;
+
+// ===== LOCAL STORAGE FUNCTIONS =====
+function saveToLocalStorage() {
+    const data = {
+        sessionsCompleted,
+        currentSession,
+        totalFocusTime,
+        todayFocusTime,
+        dayStreak,
+        lastActiveDate,
+        soundsEnabled,
+        notificationsEnabled,
+        autoStartNext,
+        autoBreakEnabled,
+        darkMode,
+        backgroundMusicEnabled,
+        tasks,
+        currentTaskId,
+        pomodoroDuration: parseInt(elements.pomodoroDuration.value),
+        breakDuration: parseInt(elements.breakDuration.value),
+        longBreakInterval: parseInt(elements.longBreakInterval.value)
+    };
+    localStorage.setItem('focusModeData', JSON.stringify(data));
 }
 
-// ===== منع التمرير الأفقي =====
-function preventHorizontalScroll() {
-    // منع التمرير الأفقي للصفحة كاملة
-    document.body.style.overflowX = 'hidden';
-    document.documentElement.style.overflowX = 'hidden';
-    
-    // السماح بالتمرير الأفقي فقط في العناصر المحددة
-    const scrollableElements = document.querySelectorAll('.activities-scroll, .tips-scroll');
-    scrollableElements.forEach(el => {
-        el.style.overflowX = 'auto';
-        el.style.WebkitOverflowScrolling = 'touch';
-    });
-    
-    // إضافة مستمع حدث لمنع التمرير الأفقي
-    document.addEventListener('wheel', function(e) {
-        if (e.deltaX !== 0) {
-            const target = e.target;
-            const isScrollable = target.closest('.activities-scroll, .tips-scroll');
-            if (!isScrollable) {
-                e.preventDefault();
-            }
-        }
-    }, { passive: false });
-    
-    // منع التمرير الأفقي باللمس
-    document.addEventListener('touchmove', function(e) {
-        const target = e.target;
-        const isScrollable = target.closest('.activities-scroll, .tips-scroll');
-        if (!isScrollable && e.touches.length === 1) {
-            e.preventDefault();
-        }
-    }, { passive: false });
-}
-
-// ===== STATE MANAGEMENT =====
-function loadMobileState() {
-    const saved = localStorage.getItem('studyMode_mobile_v2');
+function loadFromLocalStorage() {
+    const saved = localStorage.getItem('focusModeData');
     if (saved) {
-        try {
-            const state = JSON.parse(saved);
-            Object.assign(MobileState, state);
-            console.log('📱 تم تحميل الحالة بنجاح');
-        } catch (error) {
-            console.error('❌ خطأ في تحميل الحالة:', error);
-            resetToDefaults();
-        }
-    } else {
-        resetToDefaults();
-    }
-    MobileState.currentTime = MobileState.focusDuration;
-}
-
-function resetToDefaults() {
-    MobileState.stats = {
-        streak: 0,
-        totalSessions: 0,
-        totalMinutes: 0,
-        productivity: 87,
-        level: 1,
-        todaySessions: 0,
-        todayMinutes: 0
-    };
-}
-
-function saveMobileState() {
-    try {
-        const state = {
-            language: MobileState.language,
-            darkMode: MobileState.darkMode,
-            notifications: MobileState.notifications,
-            psychology: MobileState.psychology,
-            stats: MobileState.stats,
-            focusDuration: MobileState.focusDuration,
-            breakDuration: MobileState.breakDuration,
-            currentActivity: MobileState.currentActivity
-        };
+        const data = JSON.parse(saved);
         
-        localStorage.setItem('studyMode_mobile_v2', JSON.stringify(state));
-        console.log('💾 تم حفظ الحالة');
-    } catch (error) {
-        console.error('❌ فشل في حفظ الحالة:', error);
-    }
-}
-
-// ===== MOBILE UI =====
-function initMobileUI() {
-    updateMobileLanguage();
-    updateMobileTimer();
-    updateMobileStats();
-    updateMobileBoosters();
-    updateMobileMessage();
-    setupTimerCircle();
-    updateActiveActivity();
-    updateTimerModeLabel();
-    setupProgressRing();
-}
-
-function updateMobileLanguage() {
-    mobileDOM.langOptions.forEach(option => {
-        option.classList.toggle('active', option.dataset.lang === MobileState.language);
-    });
-    
-    document.documentElement.dir = MobileState.language === 'ar' ? 'rtl' : 'ltr';
-    document.documentElement.lang = MobileState.language;
-    
-    // تحديث النصوص حسب اللغة
-    updateUITexts();
-}
-
-function updateUITexts() {
-    const isArabic = MobileState.language === 'ar';
-    
-    // تحديث نصوص الأزرار
-    const startBtnText = mobileDOM.mobileStartBtn.querySelector('span');
-    const pauseBtnText = mobileDOM.mobilePauseBtn.querySelector('span');
-    const resetBtnText = mobileDOM.mobileResetBtn.querySelector('span');
-    
-    if (startBtnText) startBtnText.textContent = isArabic ? 'ابدأ' : 'Start';
-    if (pauseBtnText) pauseBtnText.textContent = isArabic ? 'إيقاف' : 'Pause';
-    if (resetBtnText) resetBtnText.textContent = isArabic ? 'إعادة' : 'Reset';
-    
-    // تحديث وضع التايمر
-    if (mobileDOM.timerMode) {
-        mobileDOM.timerMode.textContent = isArabic ? 'تركيز' : 'Focus';
-    }
-}
-
-function updateMobileTimer() {
-    const minutes = Math.floor(MobileState.currentTime / 60);
-    const seconds = MobileState.currentTime % 60;
-    const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    
-    if (mobileDOM.mobileTimer) mobileDOM.mobileTimer.textContent = timeString;
-    if (mobileDOM.timeRemaining) mobileDOM.timeRemaining.textContent = timeString;
-    if (mobileDOM.focusTimer) mobileDOM.focusTimer.textContent = timeString;
-    
-    // تحديث شريط التقدم
-    const percentage = (MobileState.currentTime / MobileState.focusDuration) * 100;
-    if (mobileDOM.progressFill) {
-        mobileDOM.progressFill.style.width = `${100 - percentage}%`;
-    }
-    
-    // تحديث دائرة التقدم
-    updateCircleProgress(percentage);
-    updateProgressRing(percentage);
-}
-
-function setupTimerCircle() {
-    const circle = document.querySelector('.progress-ring-fill');
-    if (circle) {
-        const radius = circle.getAttribute('r');
-        const circumference = 2 * Math.PI * radius;
-        circle.style.strokeDasharray = `${circumference} ${circumference}`;
-        circle.style.strokeDashoffset = circumference;
-    }
-}
-
-function setupProgressRing() {
-    const circles = document.querySelectorAll('.progress-ring-fill');
-    circles.forEach(circle => {
-        const radius = circle.getAttribute('r') || 130;
-        const circumference = 2 * Math.PI * radius;
-        circle.style.strokeDasharray = `${circumference}`;
-        circle.style.strokeDashoffset = circumference;
-    });
-}
-
-function updateProgressRing(percentage) {
-    const circles = document.querySelectorAll('.progress-ring-fill');
-    circles.forEach(circle => {
-        const radius = circle.getAttribute('r') || 130;
-        const circumference = 2 * Math.PI * radius;
-        const offset = circumference - (percentage / 100) * circumference;
-        circle.style.strokeDashoffset = offset;
-    });
-}
-
-function updateCircleProgress(percentage) {
-    if (mobileDOM.circleProgress) {
-        const degrees = (percentage / 100) * 360;
-        mobileDOM.circleProgress.style.transform = `rotate(${-45 + degrees}deg)`;
-    }
-}
-
-function updateMobileStats() {
-    // تحديث الإحصائيات في الهيدر
-    if (mobileDOM.mobileStreak) mobileDOM.mobileStreak.textContent = MobileState.stats.streak;
-    if (mobileDOM.mobileSessions) mobileDOM.mobileSessions.textContent = MobileState.stats.totalSessions;
-    if (mobileDOM.mobileFocus) mobileDOM.mobileFocus.textContent = `${MobileState.stats.productivity}%`;
-    
-    // تحديث الإحصائيات في وضع التركيز
-    if (mobileDOM.focusStreak) mobileDOM.focusStreak.textContent = `${MobileState.stats.streak} ${MobileState.language === 'ar' ? 'يوم' : 'days'}`;
-    if (mobileDOM.focusLevel) mobileDOM.focusLevel.textContent = getLevelName(MobileState.stats.level);
-    
-    // تحديث الإحصائيات في المودال
-    if (mobileDOM.totalTimeStat) mobileDOM.totalTimeStat.textContent = MobileState.stats.totalMinutes;
-    if (mobileDOM.streakStat) mobileDOM.streakStat.textContent = MobileState.stats.streak;
-    if (mobileDOM.productivityStat) mobileDOM.productivityStat.textContent = `${MobileState.stats.productivity}%`;
-    if (mobileDOM.levelStat) mobileDOM.levelStat.textContent = MobileState.stats.level;
-    if (mobileDOM.userLevel) mobileDOM.userLevel.textContent = MobileState.stats.level;
-}
-
-function getLevelName(level) {
-    const levelsAr = ['مبتدئ', 'متوسط', 'متقدم', 'محترف', 'خبير', 'ماستر', 'أسطورة'];
-    const levelsEn = ['Beginner', 'Intermediate', 'Advanced', 'Pro', 'Expert', 'Master', 'Legend'];
-    
-    const levels = MobileState.language === 'ar' ? levelsAr : levelsEn;
-    return levels[level - 1] || (MobileState.language === 'ar' ? `مستوى ${level}` : `Level ${level}`);
-}
-
-function updateMobileBoosters() {
-    let activeCount = 0;
-    
-    mobileDOM.boosters.forEach((booster, index) => {
-        const boosterName = booster.dataset.booster;
-        const isActive = MobileState.psychology[boosterName];
-        const toggle = booster.querySelector('input');
+        sessionsCompleted = data.sessionsCompleted || 0;
+        currentSession = data.currentSession || 1;
+        totalFocusTime = data.totalFocusTime || 0;
+        todayFocusTime = data.todayFocusTime || 0;
+        dayStreak = data.dayStreak || 0;
+        lastActiveDate = data.lastActiveDate;
+        soundsEnabled = data.soundsEnabled !== undefined ? data.soundsEnabled : true;
+        notificationsEnabled = data.notificationsEnabled || false;
+        autoStartNext = data.autoStartNext || false;
+        autoBreakEnabled = data.autoBreakEnabled !== undefined ? data.autoBreakEnabled : true;
+        darkMode = data.darkMode !== undefined ? data.darkMode : true;
+        backgroundMusicEnabled = data.backgroundMusicEnabled || false;
+        tasks = data.tasks || [];
+        currentTaskId = data.currentTaskId || 1;
         
-        if (isActive) {
-            booster.classList.add('active');
-            if (toggle) toggle.checked = true;
-            activeCount++;
-        } else {
-            booster.classList.remove('active');
-            if (toggle) toggle.checked = false;
-        }
-    });
-    
-    if (mobileDOM.activeBoosters) {
-        mobileDOM.activeBoosters.textContent = activeCount;
-    }
-}
-
-function updateMobileMessage() {
-    const messages = MobileState.messages[MobileState.language];
-    if (messages && messages.length > 0) {
-        const randomIndex = Math.floor(Math.random() * messages.length);
-        if (mobileDOM.currentMessage) {
-            mobileDOM.currentMessage.textContent = messages[randomIndex];
-        }
-    }
-}
-
-function updateActiveActivity() {
-    mobileDOM.activities.forEach(activity => {
-        if (activity.dataset.activity === MobileState.currentActivity) {
-            activity.classList.add('selected');
-        } else {
-            activity.classList.remove('selected');
-        }
-    });
-}
-
-function updateTimerModeLabel() {
-    const activities = {
-        study: { ar: 'مذاكرة', en: 'Study' },
-        work: { ar: 'عمل', en: 'Work' },
-        code: { ar: 'برمجة', en: 'Coding' },
-        read: { ar: 'قراءة', en: 'Reading' },
-        gym: { ar: 'تمرين', en: 'Workout' },
-        meditate: { ar: 'تأمل', en: 'Meditation' }
-    };
-    
-    const activity = activities[MobileState.currentActivity];
-    if (activity && mobileDOM.timerMode) {
-        mobileDOM.timerMode.textContent = MobileState.language === 'ar' ? activity.ar : activity.en;
+        // Update settings inputs
+        elements.pomodoroDuration.value = data.pomodoroDuration || 25;
+        elements.breakDuration.value = data.breakDuration || 5;
+        elements.longBreakInterval.value = data.longBreakInterval || 4;
+        elements.autoStart.checked = autoStartNext;
+        elements.soundsToggle.checked = soundsEnabled;
+        elements.darkMode.checked = darkMode;
+        elements.notificationsToggle.checked = notificationsEnabled;
+        elements.autoBreak.checked = autoBreakEnabled;
+        
+        // Update streak
+        updateStreak();
+        
+        // Update displays
+        updateStatsDisplay();
+        updateTodayTime();
+        updateFocusLevel();
+        renderTasks();
     }
 }
 
 // ===== TIMER FUNCTIONS =====
-function startMobileTimer() {
-    if (MobileState.isTimerRunning) return;
+function updateDisplay() {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
     
-    console.log('⏱️ بدأ التايمر');
+    elements.min.textContent = minutes.toString().padStart(2, '0');
+    elements.sec.textContent = secs.toString().padStart(2, '0');
     
-    MobileState.isTimerRunning = true;
-    MobileState.isFocusMode = true;
-    
-    // تحديث واجهة المستخدم
-    if (mobileDOM.mobileStartBtn) {
-        mobileDOM.mobileStartBtn.disabled = true;
-        const span = mobileDOM.mobileStartBtn.querySelector('span');
-        const icon = mobileDOM.mobileStartBtn.querySelector('i');
-        if (span) span.textContent = MobileState.language === 'ar' ? 'جاري' : 'Running';
-        if (icon) icon.className = 'fas fa-spinner fa-spin';
+    // Update progress circle
+    const totalSeconds = getTotalSecondsForMode();
+    if (totalSeconds > 0) {
+        const progress = ((totalSeconds - seconds) / totalSeconds) * 565.48;
+        elements.progress.style.strokeDashoffset = 565.48 - progress;
     }
     
-    if (mobileDOM.mobilePauseBtn) {
-        mobileDOM.mobilePauseBtn.disabled = false;
+    // Update time remaining text
+    updateTimeRemainingText();
+    
+    // Update session counter
+    elements.currentSession.textContent = currentSession;
+    elements.currentSessionAr.textContent = currentSession;
+    elements.totalSessionsCount.textContent = totalSessions;
+    elements.totalSessionsCountAr.textContent = totalSessions;
+    
+    // Update focus level based on time elapsed
+    if (currentMode === 'pomodoro' && !isBreakTime) {
+        const elapsed = totalSeconds - seconds;
+        focusLevel = Math.min(100, Math.floor((elapsed / totalSeconds) * 100));
+        updateFocusLevel();
+    }
+}
+
+function getTotalSecondsForMode() {
+    switch(currentMode) {
+        case 'pomodoro':
+            return isBreakTime ? 
+                (currentSession % parseInt(elements.longBreakInterval.value) === 0 ? 
+                    parseInt(elements.breakDuration.value) * 60 * 4 : 
+                    parseInt(elements.breakDuration.value) * 60) :
+                parseInt(elements.pomodoroDuration.value) * 60;
+        case 'custom':
+            return parseInt(elements.pomodoroDuration.value) * 60;
+        default:
+            return 0;
+    }
+}
+
+function updateTimeRemainingText() {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    const timeStr = `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    
+    if (document.body.classList.contains('language-ar')) {
+        elements.timeRemainingAr.textContent = `${timeStr} متبقي`;
+    } else {
+        elements.timeRemainingEn.textContent = `${timeStr} remaining`;
+    }
+}
+
+function startTimer() {
+    if (isRunning) return;
+    
+    playSound('start');
+    isRunning = true;
+    
+    // Update UI
+    elements.start.disabled = true;
+    elements.pause.disabled = false;
+    elements.start.innerHTML = '<i class="fas fa-play"></i> <span class="en">RUNNING</span><span class="ar">شغال</span>';
+    elements.start.classList.add('pulsing');
+    
+    // Start background music if enabled
+    if (backgroundMusicEnabled) {
+        elements.focusMusic.play().catch(e => console.log("Music play failed:", e));
     }
     
-    // إظهار وضع التركيز
-    if (mobileDOM.focusOverlay) {
-        mobileDOM.focusOverlay.classList.add('active');
-        document.body.classList.add('focus-mode-active');
-    }
-    
-    // بدأ العد التنازلي
-    MobileState.timerInterval = setInterval(() => {
-        if (MobileState.currentTime > 0) {
-            MobileState.currentTime--;
-            updateMobileTimer();
+    // Start interval
+    timerInterval = setInterval(() => {
+        if (currentMode === 'pomodoro' || currentMode === 'custom') {
+            seconds--;
+            totalFocusTime++;
+            todayFocusTime++;
             
-            // تحديث رسالة التحفيز كل دقيقة
-            if (MobileState.currentTime % 60 === 0 && mobileDOM.focusMessage) {
-                updateFocusMessage();
+            // Update focus level
+            focusLevel = Math.min(100, focusLevel + 0.1);
+            updateFocusLevel();
+            
+            // Check for warnings
+            checkTimeWarnings();
+            
+            if (seconds <= 0) {
+                timerComplete();
             }
+        } else if (currentMode === 'stopwatch') {
+            seconds++;
+            totalFocusTime++;
+            todayFocusTime++;
+        } else if (currentMode === 'break') {
+            seconds--;
+            if (seconds <= 0) {
+                breakComplete();
+            }
+        }
+        
+        updateDisplay();
+        saveToLocalStorage();
+        updateTodayTime();
+    }, 1000);
+}
+
+function pauseTimer() {
+    if (!isRunning) return;
+    
+    playSound('pause');
+    clearInterval(timerInterval);
+    isRunning = false;
+    
+    // Update UI
+    elements.start.disabled = false;
+    elements.pause.disabled = true;
+    elements.start.innerHTML = '<i class="fas fa-play"></i> <span class="en">START</span><span class="ar">ابدأ</span>';
+    elements.start.classList.remove('pulsing');
+    
+    // Pause background music
+    elements.focusMusic.pause();
+}
+
+function resetTimer() {
+    pauseTimer();
+    seconds = getTotalSecondsForMode();
+    updateDisplay();
+    
+    // Reset focus level if not in pomodoro
+    if (currentMode !== 'pomodoro') {
+        focusLevel = 0;
+        updateFocusLevel();
+    }
+}
+
+function skipTimer() {
+    playSound('click');
+    if (currentMode === 'pomodoro' && !isBreakTime) {
+        // Skip to break
+        isBreakTime = true;
+        seconds = (currentSession % parseInt(elements.longBreakInterval.value) === 0 ? 
+            parseInt(elements.breakDuration.value) * 60 * 4 : 
+            parseInt(elements.breakDuration.value) * 60);
+        
+        updateModeLabels();
+        showNotification(
+            "⏰ وقت الراحة!",
+            "Break time! Take a rest"
+        );
+    } else if (currentMode === 'pomodoro' && isBreakTime) {
+        // Skip to next session
+        breakComplete();
+    } else {
+        resetTimer();
+    }
+}
+
+function timerComplete() {
+    clearInterval(timerInterval);
+    playSound('complete');
+    
+    if (currentMode === 'pomodoro' && !isBreakTime) {
+        sessionsCompleted++;
+        currentSession++;
+        
+        if (currentSession > totalSessions) {
+            currentSession = 1;
+        }
+        
+        // Auto-start break if enabled
+        if (autoBreakEnabled) {
+            isBreakTime = true;
+            seconds = (currentSession % parseInt(elements.longBreakInterval.value) === 0 ? 
+                parseInt(elements.breakDuration.value) * 60 * 4 : 
+                parseInt(elements.breakDuration.value) * 60);
             
-            // تفعيل الميزات النفسية كل دقيقتين
-            if (MobileState.currentTime % 120 === 0) {
-                triggerPsychologyEvent();
+            showNotification(
+                "🎉 جلسة التركيز اكتملت! وقت الراحة",
+                "🎉 Focus session completed! Break time"
+            );
+            
+            if (autoStartNext) {
+                setTimeout(startTimer, 1000);
             }
         } else {
-            completeMobileSession();
+            showNotification(
+                "🎉 جلسة التركيز اكتملت!",
+                "🎉 Focus session completed!"
+            );
         }
-    }, 1000);
+    } else if (currentMode === 'custom') {
+        showNotification(
+            "⏰ الوقت المخصص انتهى!",
+            "⏰ Custom time completed!"
+        );
+    }
     
-    // بدأ تتبع الجلسة
-    MobileState.sessionStartTime = Date.now();
-    
-    // عرض أول رسالة تحفيزية
-    updateFocusMessage();
-    
-    // تفعيل الميزات النفسية
-    activateMobilePsychology();
-    
-    // منع قفل الشاشة
-    preventScreenLock();
-    
-    // اهتزاز
-    vibrateMobile([100]);
-    
-    // تحديث حالة المؤشر
-    updateStatusIndicator('active');
+    updateModeLabels();
+    updateStatsDisplay();
+    updateDisplay();
+    saveToLocalStorage();
 }
 
-function pauseMobileTimer() {
-    if (!MobileState.isTimerRunning) return;
+function breakComplete() {
+    clearInterval(timerInterval);
+    playSound('break');
+    isBreakTime = false;
+    seconds = parseInt(elements.pomodoroDuration.value) * 60;
     
-    console.log('⏸️ توقف التايمر');
+    showNotification(
+        "🚀 وقت الراحة انتهى! استعد للتركيز",
+        "🚀 Break time over! Get ready to focus"
+    );
     
-    MobileState.isTimerRunning = false;
-    if (MobileState.timerInterval) {
-        clearInterval(MobileState.timerInterval);
-        MobileState.timerInterval = null;
+    if (autoStartNext) {
+        setTimeout(startTimer, 1000);
     }
     
-    // تحديث واجهة المستخدم
-    if (mobileDOM.mobileStartBtn) {
-        mobileDOM.mobileStartBtn.disabled = false;
-        const span = mobileDOM.mobileStartBtn.querySelector('span');
-        const icon = mobileDOM.mobileStartBtn.querySelector('i');
-        if (span) span.textContent = MobileState.language === 'ar' ? 'ابدأ' : 'Start';
-        if (icon) icon.className = 'fas fa-play';
-    }
-    
-    if (mobileDOM.mobilePauseBtn) {
-        mobileDOM.mobilePauseBtn.disabled = true;
-    }
-    
-    // إخفاء وضع التركيز
-    if (mobileDOM.focusOverlay) {
-        mobileDOM.focusOverlay.classList.remove('active');
-        document.body.classList.remove('focus-mode-active');
-    }
-    
-    // رسالة تجنب الخسارة
-    const minutesInvested = Math.floor((MobileState.focusDuration - MobileState.currentTime) / 60);
-    if (minutesInvested > 0 && MobileState.psychology.commitment) {
-        const message = MobileState.language === 'ar' 
-            ? `خسرت ${minutesInvested} دقيقة تركيز! رجّع شغلك!`
-            : `You lost ${minutesInvested} minutes of focus! Get back to work!`;
-        
-        showToast(message);
-    }
-    
-    // السماح بقفل الشاشة
-    allowScreenLock();
-    
-    // اهتزاز
-    vibrateMobile([100, 50, 100]);
-    
-    // تحديث حالة المؤشر
-    updateStatusIndicator('paused');
+    updateModeLabels();
+    updateDisplay();
 }
 
-function resetMobileTimer() {
-    console.log('🔄 إعادة تعيين التايمر');
-    
-    // إيقاف العد التنازلي
-    if (MobileState.timerInterval) {
-        clearInterval(MobileState.timerInterval);
-        MobileState.timerInterval = null;
+function checkTimeWarnings() {
+    if (currentMode === 'pomodoro' && !isBreakTime) {
+        // 5 minute warning
+        if (seconds === 5 * 60) {
+            showNotification(
+                "⏳ 5 دقائق متبقية",
+                "⏳ 5 minutes remaining"
+            );
+        }
+        // 1 minute warning
+        else if (seconds === 60) {
+            showNotification(
+                "⏳ دقيقة واحدة متبقية",
+                "⏳ 1 minute remaining"
+            );
+        }
     }
-    
-    // إعادة تعيين الحالة
-    MobileState.isTimerRunning = false;
-    MobileState.isFocusMode = false;
-    MobileState.currentTime = MobileState.focusDuration;
-    
-    // تحديث واجهة المستخدم
-    if (mobileDOM.mobileStartBtn) {
-        mobileDOM.mobileStartBtn.disabled = false;
-        const span = mobileDOM.mobileStartBtn.querySelector('span');
-        const icon = mobileDOM.mobileStartBtn.querySelector('i');
-        if (span) span.textContent = MobileState.language === 'ar' ? 'ابدأ' : 'Start';
-        if (icon) icon.className = 'fas fa-play';
-    }
-    
-    if (mobileDOM.mobilePauseBtn) {
-        mobileDOM.mobilePauseBtn.disabled = true;
-    }
-    
-    // إخفاء وضع التركيز
-    if (mobileDOM.focusOverlay) {
-        mobileDOM.focusOverlay.classList.remove('active');
-        document.body.classList.remove('focus-mode-active');
-    }
-    
-    // تحديث العرض
-    updateMobileTimer();
-    
-    // رسالة إعادة التعيين
-    const message = MobileState.language === 'ar'
-        ? 'التايمر اتعاد! جهز نفسك للجولة الجديدة!'
-        : 'Timer reset! Prepare for the next round!';
-    
-    showToast(message);
-    
-    // السماح بقفل الشاشة
-    allowScreenLock();
-    
-    // تحديث حالة المؤشر
-    updateStatusIndicator('ready');
 }
 
-function completeMobileSession() {
-    console.log('🎯 اكتملت الجلسة');
+// ===== MODE FUNCTIONS =====
+function changeMode(newMode) {
+    playSound('click');
     
-    // إيقاف العد التنازلي
-    if (MobileState.timerInterval) {
-        clearInterval(MobileState.timerInterval);
-        MobileState.timerInterval = null;
+    // Reset break state if changing from pomodoro
+    if (currentMode === 'pomodoro') {
+        isBreakTime = false;
     }
     
-    MobileState.isTimerRunning = false;
+    currentMode = newMode;
     
-    // حساب مدة الجلسة
-    const sessionDuration = MobileState.focusDuration - MobileState.currentTime;
-    const sessionMinutes = Math.floor(sessionDuration / 60);
+    // Update active button
+    elements.modeBtns.forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.mode === newMode) {
+            btn.classList.add('active');
+        }
+    });
     
-    // تحديث الإحصائيات
-    MobileState.stats.totalSessions++;
-    MobileState.stats.totalMinutes += sessionMinutes;
-    MobileState.stats.todaySessions++;
-    MobileState.stats.todayMinutes += sessionMinutes;
+    // Reset timer with new mode
+    resetTimer();
     
-    // تحديث السلسلة
-    updateMobileStreak();
-    
-    // حساب درجة الإنتاجية
-    calculateProductivityScore(sessionMinutes);
-    
-    // التحقق من الترقية
-    checkLevelUp();
-    
-    // حفظ الحالة
-    saveMobileState();
-    
-    // تحديث واجهة المستخدم
-    updateMobileStats();
-    
-    // إخفاء وضع التركيز
-    if (mobileDOM.focusOverlay) {
-        mobileDOM.focusOverlay.classList.remove('active');
-        document.body.classList.remove('focus-mode-active');
-    }
-    
-    // إعادة تعيين التايمر
-    MobileState.currentTime = MobileState.focusDuration;
-    updateMobileTimer();
-    
-    // عرض رسالة الإكمال
-    showCompletionMessage(sessionMinutes);
-    
-    // المكافأة المؤجلة
-    if (MobileState.psychology.reward) {
-        setTimeout(() => showRewardMessage(), 1000);
-    }
-    
-    // الاحتفال
-    triggerMobileCelebration();
-    
-    // السماح بقفل الشاشة
-    allowScreenLock();
-    
-    // اهتزاز الاحتفال
-    vibrateMobile([100, 50, 100, 50, 100]);
-    
-    // تحديث حالة المؤشر
-    updateStatusIndicator('completed');
+    // Update labels
+    updateModeLabels();
 }
 
-function updateMobileStreak() {
-    const today = new Date().toDateString();
-    const lastSession = localStorage.getItem('lastMobileSessionDate');
+function updateModeLabels() {
+    const isArabic = document.body.classList.contains('language-ar');
     
-    if (lastSession === today) return; // تم العد اليوم
+    if (currentMode === 'pomodoro') {
+        if (isBreakTime) {
+            const isLongBreak = currentSession % parseInt(elements.longBreakInterval.value) === 0;
+            elements.modeLabelEn.textContent = isLongBreak ? 'LONG BREAK' : 'SHORT BREAK';
+            elements.modeLabelAr.textContent = isLongBreak ? 'راحة طويلة' : 'راحة قصيرة';
+        } else {
+            elements.modeLabelEn.textContent = 'FOCUS SESSION';
+            elements.modeLabelAr.textContent = 'جلسة تركيز';
+        }
+    } else if (currentMode === 'stopwatch') {
+        elements.modeLabelEn.textContent = 'STOPWATCH';
+        elements.modeLabelAr.textContent = 'ساعة توقيت';
+    } else if (currentMode === 'custom') {
+        elements.modeLabelEn.textContent = 'CUSTOM TIME';
+        elements.modeLabelAr.textContent = 'وقت مخصص';
+    } else if (currentMode === 'break') {
+        elements.modeLabelEn.textContent = 'BREAK TIME';
+        elements.modeLabelAr.textContent = 'وقت راحة';
+    }
+}
+
+// ===== MESSAGE FUNCTIONS =====
+function showNextMessage() {
+    playSound('click');
+    currentMessageIndex = (currentMessageIndex + 1) % messages.en.length;
+    updateMessage();
+}
+
+function showPrevMessage() {
+    playSound('click');
+    currentMessageIndex = (currentMessageIndex - 1 + messages.en.length) % messages.en.length;
+    updateMessage();
+}
+
+function updateMessage() {
+    elements.msgEn.textContent = messages.en[currentMessageIndex];
+    elements.msgAr.textContent = messages.ar[currentMessageIndex];
     
-    const yesterday = new Date(Date.now() - 86400000).toDateString();
-    if (lastSession === yesterday) {
-        MobileState.stats.streak++;
+    // Add fade effect
+    elements.msgEn.style.opacity = '0';
+    elements.msgAr.style.opacity = '0';
+    setTimeout(() => {
+        elements.msgEn.style.opacity = '1';
+        elements.msgAr.style.opacity = '1';
+    }, 300);
+}
+
+// ===== LANGUAGE FUNCTIONS =====
+function changeLanguage(lang) {
+    playSound('click');
+    
+    // Update body classes
+    document.body.className = `language-${lang}`;
+    document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    
+    // Update active button
+    elements.langBtns.forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.lang === lang) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // Update all text elements
+    updateModeLabels();
+    updateTimeRemainingText();
+    updateMessage();
+    updateStatsDisplay();
+    updateTodayTime();
+    updateFocusLevel();
+    
+    saveToLocalStorage();
+}
+
+// ===== SOUND FUNCTIONS =====
+function playSound(soundName) {
+    if (!soundsEnabled) return;
+    
+    try {
+        const sound = elements[`${soundName}Sound`];
+        if (sound) {
+            sound.currentTime = 0;
+            sound.play().catch(e => console.log("Sound play failed:", e));
+        }
+    } catch (error) {
+        console.log("Sound error:", error);
+    }
+}
+
+// ===== NOTIFICATION FUNCTIONS =====
+function showNotification(title, message) {
+    if (!notificationsEnabled) return;
+    
+    // Check browser support
+    if (!("Notification" in window)) {
+        console.log("This browser does not support notifications");
+        return;
+    }
+    
+    // Check permission
+    if (Notification.permission === "granted") {
+        createNotification(title, message);
+    } else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then(permission => {
+            if (permission === "granted") {
+                createNotification(title, message);
+            }
+        });
+    }
+}
+
+function createNotification(title, message) {
+    const notification = new Notification(title, {
+        body: message,
+        icon: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+        badge: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+    });
+    
+    // Close notification after 5 seconds
+    setTimeout(() => {
+        notification.close();
+    }, 5000);
+}
+
+// ===== STATS FUNCTIONS =====
+function updateStatsDisplay() {
+    // Calculate hours and minutes
+    const totalHours = Math.floor(totalFocusTime / 3600);
+    const totalMinutes = Math.floor((totalFocusTime % 3600) / 60);
+    
+    // Update stats modal
+    elements.totalSessionsStat.textContent = sessionsCompleted;
+    elements.totalFocusTimeStat.textContent = `${totalHours}h ${totalMinutes}m`;
+    elements.todayFocusStat.textContent = `${Math.floor(todayFocusTime / 60)}m`;
+    elements.streakStat.textContent = dayStreak;
+    
+    // Update stats bar
+    elements.streakDisplay.textContent = dayStreak;
+}
+
+function updateTodayTime() {
+    const minutes = Math.floor(todayFocusTime / 60);
+    elements.todayTime.textContent = `${minutes}m`;
+}
+
+function updateFocusLevel() {
+    elements.focusLevel.textContent = `${Math.round(focusLevel)}%`;
+    
+    // Update color based on level
+    if (focusLevel >= 80) {
+        elements.focusLevel.style.color = '#00ff9d';
+    } else if (focusLevel >= 50) {
+        elements.focusLevel.style.color = '#4facfe';
     } else {
-        MobileState.stats.streak = 1;
+        elements.focusLevel.style.color = '#ff8a00';
     }
-    
-    localStorage.setItem('lastMobileSessionDate', today);
 }
 
-function calculateProductivityScore(sessionMinutes) {
-    let score = 100;
+function updateStreak() {
+    const today = new Date().toDateString();
     
-    // خصم للجلسات القصيرة
-    if (sessionMinutes < 10) {
-        score -= 20;
+    if (!lastActiveDate) {
+        lastActiveDate = today;
+        dayStreak = 1;
+    } else if (lastActiveDate !== today) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        if (lastActiveDate === yesterday.toDateString()) {
+            dayStreak++;
+        } else {
+            dayStreak = 1;
+        }
+        
+        lastActiveDate = today;
+        todayFocusTime = 0;
     }
     
-    // خصم للمقاطعات
-    if (MobileState.interruptions && MobileState.interruptions > 0) {
-        score -= MobileState.interruptions * 5;
+    saveToLocalStorage();
+}
+
+function resetStats() {
+    if (confirm(document.body.classList.contains('language-ar') ? 
+        "هل تريد مسح جميع الإحصائيات؟" : 
+        "Are you sure you want to reset all statistics?")) {
+        
+        sessionsCompleted = 0;
+        currentSession = 1;
+        totalFocusTime = 0;
+        todayFocusTime = 0;
+        dayStreak = 0;
+        lastActiveDate = null;
+        tasks = [];
+        currentTaskId = 1;
+        
+        updateStatsDisplay();
+        updateTodayTime();
+        updateFocusLevel();
+        renderTasks();
+        saveToLocalStorage();
+        
+        showNotification(
+            "🔄 تم مسح الإحصائيات",
+            "🔄 Statistics cleared"
+        );
+    }
+}
+
+// ===== TASK FUNCTIONS =====
+function addTask() {
+    playSound('click');
+    
+    const text = prompt(
+        document.body.classList.contains('language-ar') ? 
+        "أدخل مهمة جديدة:" : 
+        "Enter a new task:"
+    );
+    
+    if (text && text.trim()) {
+        const task = {
+            id: currentTaskId++,
+            text: text.trim(),
+            completed: false,
+            createdAt: new Date().toISOString()
+        };
+        
+        tasks.push(task);
+        renderTasks();
+        saveToLocalStorage();
+    }
+}
+
+function toggleTask(taskId) {
+    const task = tasks.find(t => t.id === taskId);
+    if (task) {
+        task.completed = !task.completed;
+        renderTasks();
+        saveToLocalStorage();
+        playSound('click');
+    }
+}
+
+function deleteTask(taskId) {
+    tasks = tasks.filter(t => t.id !== taskId);
+    renderTasks();
+    saveToLocalStorage();
+    playSound('click');
+}
+
+function renderTasks() {
+    elements.tasksList.innerHTML = '';
+    
+    if (tasks.length === 0) {
+        const emptyMsg = document.createElement('div');
+        emptyMsg.className = 'empty-tasks';
+        emptyMsg.innerHTML = document.body.classList.contains('language-ar') ? 
+            '<p>لا توجد مهام. اضف مهمة جديدة!</p>' :
+            '<p>No tasks. Add a new one!</p>';
+        elements.tasksList.appendChild(emptyMsg);
+        return;
     }
     
-    // تحديث متوسط الإنتاجية
-    MobileState.stats.productivity = Math.round(
-        (MobileState.stats.productivity * 0.7) + (score * 0.3)
+    tasks.forEach(task => {
+        const taskElement = document.createElement('div');
+        taskElement.className = `task-item ${task.completed ? 'completed' : ''}`;
+        taskElement.innerHTML = `
+            <div class="task-checkbox ${task.completed ? 'checked' : ''}" 
+                 onclick="toggleTask(${task.id})"></div>
+            <div class="task-text">${task.text}</div>
+            <button class="task-delete" onclick="deleteTask(${task.id})">
+                <i class="fas fa-trash"></i>
+            </button>
+        `;
+        elements.tasksList.appendChild(taskElement);
+    });
+}
+
+// ===== SETTINGS FUNCTIONS =====
+function saveSettings() {
+    playSound('click');
+    
+    // Get values from inputs
+    autoStartNext = elements.autoStart.checked;
+    soundsEnabled = elements.soundsToggle.checked;
+    darkMode = elements.darkMode.checked;
+    notificationsEnabled = elements.notificationsToggle.checked;
+    autoBreakEnabled = elements.autoBreak.checked;
+    
+    // Apply dark mode
+    if (darkMode) {
+        document.documentElement.style.setProperty('--bg', '#000000');
+        document.documentElement.style.setProperty('--card', '#0f0f0f');
+    } else {
+        document.documentElement.style.setProperty('--bg', '#f5f5f5');
+        document.documentElement.style.setProperty('--card', '#ffffff');
+    }
+    
+    // Request notification permission if enabled
+    if (notificationsEnabled && Notification.permission === "default") {
+        Notification.requestPermission();
+    }
+    
+    // Reset timer with new durations
+    resetTimer();
+    
+    // Save and close
+    saveToLocalStorage();
+    elements.settings.classList.remove('active');
+    
+    showNotification(
+        "✅ تم حفظ الإعدادات",
+        "✅ Settings saved"
     );
 }
 
-function checkLevelUp() {
-    const sessionsNeeded = MobileState.stats.level * 10;
-    if (MobileState.stats.totalSessions >= sessionsNeeded) {
-        MobileState.stats.level++;
-        showLevelUpMessage();
+function toggleBackgroundMusic() {
+    playSound('click');
+    backgroundMusicEnabled = !backgroundMusicEnabled;
+    
+    if (backgroundMusicEnabled && isRunning) {
+        elements.focusMusic.play().catch(e => console.log("Music play failed:", e));
+    } else {
+        elements.focusMusic.pause();
+    }
+    
+    // Update button icon
+    elements.musicBtn.innerHTML = backgroundMusicEnabled ? 
+        '<i class="fas fa-volume-up"></i>' : 
+        '<i class="fas fa-volume-mute"></i>';
+    
+    saveToLocalStorage();
+}
+
+// ===== PRESET FUNCTIONS =====
+function setPresetTime(minutes) {
+    playSound('click');
+    
+    if (currentMode === 'custom') {
+        seconds = minutes * 60;
+        updateDisplay();
+        
+        // Highlight active preset
+        elements.presets.forEach(preset => {
+            preset.classList.remove('active');
+            if (parseInt(preset.dataset.minutes) === minutes) {
+                preset.classList.add('active');
+            }
+        });
+        
+        showNotification(
+            `⏰ تم تعيين الوقت إلى ${minutes} دقيقة`,
+            `⏰ Time set to ${minutes} minutes`
+        );
     }
 }
 
-function updateStatusIndicator(status) {
-    const indicator = document.querySelector('.status-indicator');
-    if (!indicator) return;
+// ===== FULLSCREEN FUNCTIONS =====
+function toggleFullscreen() {
+    playSound('click');
     
-    const dot = indicator.querySelector('.status-dot');
-    const text = indicator.querySelector('span');
-    
-    if (!dot || !text) return;
-    
-    const statuses = {
-        ready: { color: '#00ff00', text: MobileState.language === 'ar' ? 'جاهز' : 'Ready' },
-        active: { color: '#ffa500', text: MobileState.language === 'ar' ? 'نشط' : 'Active' },
-        paused: { color: '#ff4757', text: MobileState.language === 'ar' ? 'متوقف' : 'Paused' },
-        completed: { color: '#00ffcc', text: MobileState.language === 'ar' ? 'مكتمل' : 'Completed' }
-    };
-    
-    const current = statuses[status] || statuses.ready;
-    dot.style.backgroundColor = current.color;
-    text.textContent = current.text;
-}
-
-// ===== PSYCHOLOGY FUNCTIONS =====
-function activateMobilePsychology() {
-    console.log('🧠 تفعيل الميزات النفسية');
-    
-    // حماية التدفق
-    if (MobileState.psychology.flow) {
-        activateFlowProtection();
-    }
-    
-    // انحياز الالتزام
-    if (MobileState.psychology.commitment) {
-        activateCommitmentBias();
-    }
-}
-
-function activateFlowProtection() {
-    let hasShownWarning = false;
-    
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden && MobileState.isTimerRunning && !hasShownWarning) {
-            hasShownWarning = true;
-            
-            const warning = MobileState.language === 'ar'
-                ? 'رجّع للتطبيق! كسرت التدفق!'
-                : 'Return to app! You broke the flow!';
-            
-            showToast(warning);
-            
-            // تتبع المقاطعات
-            MobileState.interruptions = (MobileState.interruptions || 0) + 1;
-            
-            // إعادة تعيين العلم بعد 5 ثواني
-            setTimeout(() => {
-                hasShownWarning = false;
-            }, 5000);
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+            console.log(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+        elements.fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+        isFullscreen = true;
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+            elements.fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+            isFullscreen = false;
         }
-    });
+    }
 }
 
-function activateCommitmentBias() {
-    // عرض رسائل الالتزام بشكل دوري
-    const commitmentInterval = setInterval(() => {
-        if (!MobileState.isTimerRunning) {
-            clearInterval(commitmentInterval);
+// ===== SHARE FUNCTION =====
+function shareApp() {
+    playSound('click');
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'Focus Mode Pro',
+            text: 'Check out this awesome focus timer app!',
+            url: window.location.href
+        });
+    } else {
+        // Fallback: Copy to clipboard
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            showNotification(
+                "📋 تم نسخ الرابط",
+                "📋 Link copied to clipboard"
+            );
+        });
+    }
+}
+
+// ===== PARTICLES SYSTEM =====
+function createParticles() {
+    const container = document.getElementById('particles');
+    container.innerHTML = '';
+    
+    for (let i = 0; i < 30; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        
+        // Random properties
+        particle.style.left = Math.random() * 100 + 'vw';
+        particle.style.top = Math.random() * 100 + 'vh';
+        particle.style.animationDelay = Math.random() * 15 + 's';
+        particle.style.animationDuration = (10 + Math.random() * 15) + 's';
+        particle.style.width = (2 + Math.random() * 4) + 'px';
+        particle.style.height = particle.style.width;
+        
+        // Random color from gradient
+        const colors = ['#00f2fe', '#4facfe', '#ff00ff', '#00ff9d'];
+        particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+        
+        container.appendChild(particle);
+    }
+}
+
+// ===== KEYBOARD SHORTCUTS =====
+function setupKeyboardShortcuts() {
+    document.addEventListener('keydown', (e) => {
+        // Prevent shortcuts in input fields
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
             return;
         }
         
-        const messages = MobileState.language === 'ar'
-            ? ['انت متعهد! مينفعش توقف!', 'وعدت نفسك! خلّص اللي بدأت فيه!']
-            : ['You committed! Can\'t stop now!', 'You promised yourself! Finish what you started!'];
-        
-        if (mobileDOM.focusMessage) {
-            const message = messages[Math.floor(Math.random() * messages.length)];
-            mobileDOM.focusMessage.textContent = message;
+        // Space: Start/Pause
+        if (e.code === 'Space') {
+            e.preventDefault();
+            if (isRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
         }
-    }, 120000); // كل دقيقتين
+        
+        // R: Reset
+        if (e.code === 'KeyR' && !e.ctrlKey) {
+            e.preventDefault();
+            resetTimer();
+        }
+        
+        // S: Skip
+        if (e.code === 'KeyS' && !e.ctrlKey) {
+            e.preventDefault();
+            skipTimer();
+        }
+        
+        // N: Next message
+        if (e.code === 'KeyN' && !e.ctrlKey) {
+            e.preventDefault();
+            showNextMessage();
+        }
+        
+        // P: Previous message
+        if (e.code === 'KeyP' && !e.ctrlKey) {
+            e.preventDefault();
+            showPrevMessage();
+        }
+        
+        // 1-4: Modes
+        if (e.code === 'Digit1') changeMode('pomodoro');
+        if (e.code === 'Digit2') changeMode('stopwatch');
+        if (e.code === 'Digit3') changeMode('custom');
+        if (e.code === 'Digit4') changeMode('break');
+        
+        // L: Toggle language
+        if (e.code === 'KeyL' && !e.ctrlKey) {
+            e.preventDefault();
+            const currentLang = document.body.classList.contains('language-ar') ? 'ar' : 'en';
+            changeLanguage(currentLang === 'ar' ? 'en' : 'ar');
+        }
+        
+        // M: Toggle music
+        if (e.code === 'KeyM' && !e.ctrlKey) {
+            e.preventDefault();
+            toggleBackgroundMusic();
+        }
+        
+        // F: Fullscreen
+        if (e.code === 'KeyF' && !e.ctrlKey) {
+            e.preventDefault();
+            toggleFullscreen();
+        }
+        
+        // Esc: Close modals
+        if (e.code === 'Escape') {
+            closeAllModals();
+        }
+    });
 }
 
-function triggerPsychologyEvent() {
-    if (!MobileState.isTimerRunning) return;
-    
-    const events = [];
-    
-    if (MobileState.psychology.ego) {
-        events.push('ego');
-    }
-    
-    if (events.length > 0 && mobileDOM.focusMessage) {
-        const randomEvent = events[Math.floor(Math.random() * events.length)];
-        
-        if (randomEvent === 'ego') {
-            const messages = MobileState.language === 'ar'
-                ? ['انت اسطورة! محدش في مستواك!', 'عقلك جامد فشخ! استمر!']
-                : ['You\'re a legend! No one is on your level!', 'Your mind is epic! Keep going!'];
-            
-            const message = messages[Math.floor(Math.random() * messages.length)];
-            mobileDOM.focusMessage.textContent = message;
-        }
-    }
+function closeAllModals() {
+    elements.welcome.classList.remove('active');
+    elements.settings.classList.remove('active');
+    elements.stats.classList.remove('active');
 }
 
-function updateFocusMessage() {
-    const messages = MobileState.messages[MobileState.language];
-    if (messages && messages.length > 0 && mobileDOM.focusMessage) {
-        const randomIndex = Math.floor(Math.random() * messages.length);
-        mobileDOM.focusMessage.textContent = messages[randomIndex];
-    }
-}
-
-// ===== MOBILE EVENTS =====
-function setupMobileEvents() {
-    console.log('🔧 إعداد الأحداث...');
+// ===== INITIALIZATION =====
+function init() {
+    // Load saved data
+    loadFromLocalStorage();
     
-    // شاشة الترحيب
-    if (mobileDOM.startAppBtn) {
-        mobileDOM.startAppBtn.addEventListener('click', () => {
-            if (mobileDOM.welcomeScreen) mobileDOM.welcomeScreen.classList.remove('active');
-            if (mobileDOM.appContainer) mobileDOM.appContainer.classList.add('active');
-            vibrateMobile([100]);
-        });
-    }
+    // Setup event listeners
+    setupEventListeners();
     
-    // تغيير اللغة
-    if (mobileDOM.langOptions) {
-        mobileDOM.langOptions.forEach(option => {
-            option.addEventListener('click', () => {
-                MobileState.language = option.dataset.lang;
-                updateMobileLanguage();
-                updateMobileMessage();
-                updateTimerModeLabel();
-                saveMobileState();
-                
-                mobileDOM.langOptions.forEach(opt => opt.classList.remove('active'));
-                option.classList.add('active');
-                
-                vibrateMobile([50]);
-            });
-        });
-    }
+    // Setup keyboard shortcuts
+    setupKeyboardShortcuts();
     
-    // القوائم
-    if (mobileDOM.menuBtn) {
-        mobileDOM.menuBtn.addEventListener('click', () => {
-            if (mobileDOM.sideMenu) mobileDOM.sideMenu.classList.add('active');
-            vibrateMobile([50]);
-        });
-    }
+    // Create particles
+    createParticles();
     
-    if (mobileDOM.closeMenuBtn) {
-        mobileDOM.closeMenuBtn.addEventListener('click', () => {
-            if (mobileDOM.sideMenu) mobileDOM.sideMenu.classList.remove('active');
-            vibrateMobile([50]);
-        });
-    }
+    // Initialize displays
+    updateDisplay();
+    updateMessage();
+    updateStatsDisplay();
+    updateTodayTime();
+    updateFocusLevel();
+    updateModeLabels();
     
-    if (mobileDOM.moreMenuBtn) {
-        mobileDOM.moreMenuBtn.addEventListener('click', () => {
-            if (mobileDOM.moreMenu) mobileDOM.moreMenu.classList.add('active');
-            vibrateMobile([50]);
-        });
-    }
+    // Update music button icon
+    elements.musicBtn.innerHTML = backgroundMusicEnabled ? 
+        '<i class="fas fa-volume-up"></i>' : 
+        '<i class="fas fa-volume-mute"></i>';
     
-    if (mobileDOM.closeMoreBtn) {
-        mobileDOM.closeMoreBtn.addEventListener('click', () => {
-            if (mobileDOM.moreMenu) mobileDOM.moreMenu.classList.remove('active');
-            vibrateMobile([50]);
-        });
-    }
+    // Update fullscreen button icon
+    elements.fullscreenBtn.innerHTML = isFullscreen ? 
+        '<i class="fas fa-compress"></i>' : 
+        '<i class="fas fa-expand"></i>';
     
-    // تحكمات التايمر
-    if (mobileDOM.mobileStartBtn) {
-        mobileDOM.mobileStartBtn.addEventListener('click', startMobileTimer);
-    }
-    
-    if (mobileDOM.mobilePauseBtn) {
-        mobileDOM.mobilePauseBtn.addEventListener('click', pauseMobileTimer);
-    }
-    
-    if (mobileDOM.mobileResetBtn) {
-        mobileDOM.mobileResetBtn.addEventListener('click', resetMobileTimer);
-    }
-    
-    // تحكمات وضع التركيز
-    if (mobileDOM.endFocusBtn) {
-        mobileDOM.endFocusBtn.addEventListener('click', () => {
-            const message = MobileState.language === 'ar' 
-                ? 'انت متأكد انك عايز توقف الجلسة؟'
-                : 'Are you sure you want to end the session?';
-            
-            if (confirm(message)) {
-                resetMobileTimer();
-            }
-        });
-    }
-    
-    if (mobileDOM.pauseFocusBtn) {
-        mobileDOM.pauseFocusBtn.addEventListener('click', pauseMobileTimer);
-    }
-    
-    // اختيار النشاط
-    if (mobileDOM.activities) {
-        mobileDOM.activities.forEach(activity => {
-            activity.addEventListener('click', () => {
-                MobileState.currentActivity = activity.dataset.activity;
-                updateActiveActivity();
-                updateTimerModeLabel();
-                saveMobileState();
-                vibrateMobile([50]);
-            });
-        });
-    }
-    
-    // معززات التركيز
-    if (mobileDOM.boosterToggles) {
-        mobileDOM.boosterToggles.forEach(toggle => {
-            toggle.addEventListener('change', () => {
-                const booster = toggle.closest('.booster').dataset.booster;
-                MobileState.psychology[booster] = toggle.checked;
-                
-                const boosterElement = toggle.closest('.booster');
-                if (toggle.checked) {
-                    boosterElement.classList.add('active');
-                } else {
-                    boosterElement.classList.remove('active');
-                }
-                
-                const activeCount = Object.values(MobileState.psychology).filter(v => v).length;
-                if (mobileDOM.activeBoosters) {
-                    mobileDOM.activeBoosters.textContent = activeCount;
-                }
-                
-                saveMobileState();
-                vibrateMobile([50]);
-            });
-        });
-    }
-    
-    // التايمرات السريعة
-    if (mobileDOM.quickTimers) {
-        mobileDOM.quickTimers.forEach(timer => {
-            timer.addEventListener('click', () => {
-                mobileDOM.quickTimers.forEach(t => t.classList.remove('active'));
-                timer.classList.add('active');
-                
-                const minutes = parseInt(timer.dataset.time);
-                MobileState.focusDuration = minutes * 60;
-                MobileState.currentTime = minutes * 60;
-                
-                updateMobileTimer();
-                saveMobileState();
-                vibrateMobile([50]);
-            });
-        });
-    }
-    
-    // تحديث الرسائل
-    if (mobileDOM.refreshMessage) {
-        mobileDOM.refreshMessage.addEventListener('click', () => {
-            updateMobileMessage();
-            vibrateMobile([50]);
-        });
-    }
-    
-    // الإجراءات السريعة
-    if (mobileDOM.deepFocusBtn) {
-        mobileDOM.deepFocusBtn.addEventListener('click', () => {
-            Object.keys(MobileState.psychology).forEach(key => {
-                MobileState.psychology[key] = true;
-            });
-            
-            updateMobileBoosters();
-            
-            if (!MobileState.isTimerRunning) {
-                startMobileTimer();
-            }
-            
-            showToast(MobileState.language === 'ar' 
-                ? 'تركيز عميق مفعل!'
-                : 'Deep focus activated!');
-            
-            vibrateMobile([100, 50, 100]);
-        });
-    }
-    
-    if (mobileDOM.shortBreakBtn) {
-        mobileDOM.shortBreakBtn.addEventListener('click', () => {
-            MobileState.focusDuration = 5 * 60;
-            MobileState.currentTime = 5 * 60;
-            MobileState.timerMode = 'break';
-            
-            updateMobileTimer();
-            
-            showToast(MobileState.language === 'ar'
-                ? 'راحة 5 دقائق'
-                : '5 minute break');
-            
-            vibrateMobile([50]);
-        });
-    }
-    
-    if (mobileDOM.focusMusicBtn) {
-        mobileDOM.focusMusicBtn.addEventListener('click', () => {
-            showToast(MobileState.language === 'ar'
-                ? 'موسيقى التركيز جاهزة'
-                : 'Focus music ready');
-            
-            vibrateMobile([50]);
-        });
-    }
-    
-    if (mobileDOM.statsBtn) {
-        mobileDOM.statsBtn.addEventListener('click', () => {
-            if (mobileDOM.statsModal) {
-                mobileDOM.statsModal.classList.add('active');
-                vibrateMobile([50]);
-            }
-        });
-    }
-    
-    // زر المساعدة
-    if (mobileDOM.timerHelp) {
-        mobileDOM.timerHelp.addEventListener('click', () => {
-            showToast(MobileState.language === 'ar'
-                ? 'اختر الوقت المناسب ثم اضغط ابدأ للتركيز'
-                : 'Choose a time then press Start to focus');
-            
-            vibrateMobile([50]);
-        });
-    }
-    
-    // زر المستخدم
-    if (mobileDOM.userBtn) {
-        mobileDOM.userBtn.addEventListener('click', () => {
-            if (mobileDOM.sideMenu) {
-                mobileDOM.sideMenu.classList.add('active');
-                vibrateMobile([50]);
-            }
-        });
-    }
-    
-    // إغلاق المودالات عند الضغط خارجها
-    document.addEventListener('click', (e) => {
-        // إغلاق القائمة الجانبية
-        if (mobileDOM.sideMenu && mobileDOM.sideMenu.classList.contains('active') &&
-            !mobileDOM.sideMenu.contains(e.target) && 
-            !mobileDOM.menuBtn.contains(e.target) &&
-            !mobileDOM.userBtn.contains(e.target)) {
-            mobileDOM.sideMenu.classList.remove('active');
-        }
-        
-        // إغلاق قائمة المزيد
-        if (mobileDOM.moreMenu && mobileDOM.moreMenu.classList.contains('active') &&
-            !mobileDOM.moreMenu.contains(e.target) && 
-            !mobileDOM.moreMenuBtn.contains(e.target)) {
-            mobileDOM.moreMenu.classList.remove('active');
-        }
-        
-        // إغلاق مودال الإحصائيات
-        if (mobileDOM.statsModal && mobileDOM.statsModal.classList.contains('active')) {
-            const modalContent = mobileDOM.statsModal.querySelector('.modal-content');
-            if (modalContent && !modalContent.contains(e.target) &&
-                !mobileDOM.statsBtn.contains(e.target)) {
-                mobileDOM.statsModal.classList.remove('active');
-            }
+    // Set audio volumes
+    Object.keys(elements).forEach(key => {
+        if (key.includes('Sound') || key.includes('Music')) {
+            elements[key].volume = 0.3;
         }
     });
     
-    // إغلاق المودالات بمفتاح Escape
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            if (mobileDOM.sideMenu) mobileDOM.sideMenu.classList.remove('active');
-            if (mobileDOM.moreMenu) mobileDOM.moreMenu.classList.remove('active');
-            if (mobileDOM.statsModal) mobileDOM.statsModal.classList.remove('active');
-        }
-    });
-    
-    console.log('✅ تم إعداد جميع الأحداث');
-}
-
-// ===== MOBILE GESTURES =====
-function setupMobileGestures() {
-    // سحب لإغلاق القائمة الجانبية
-    let startX = 0;
-    
-    document.addEventListener('touchstart', (e) => {
-        if (mobileDOM.sideMenu && mobileDOM.sideMenu.classList.contains('active')) {
-            startX = e.touches[0].clientX;
-        }
-    });
-    
-    document.addEventListener('touchmove', (e) => {
-        if (!mobileDOM.sideMenu || !mobileDOM.sideMenu.classList.contains('active')) return;
-        
-        const currentX = e.touches[0].clientX;
-        const diff = currentX - startX;
-        
-        // إذا كان السحب لليمين (إغلاق القائمة)
-        if (diff > 50) {
-            mobileDOM.sideMenu.classList.remove('active');
-        }
-    });
-    
-    // سحب لأسفل لتحديث الرسائل
-    let startY = 0;
-    const messageSection = document.querySelector('.mobile-messages');
-    
-    if (messageSection) {
-        messageSection.addEventListener('touchstart', (e) => {
-            startY = e.touches[0].clientY;
-        });
-        
-        messageSection.addEventListener('touchend', (e) => {
-            const endY = e.changedTouches[0].clientY;
-            const diff = startY - endY;
-            
-            // إذا كان السحب لأسفل بما يكفي
-            if (diff > 50) {
-                updateMobileMessage();
-                showToast(MobileState.language === 'ar'
-                    ? 'تم تحديث الرسائل'
-                    : 'Messages refreshed');
-            }
-        });
-    }
-}
-
-// ===== MOBILE SERVICES =====
-function startMobileServices() {
-    // الحفظ التلقائي كل دقيقة
-    setInterval(() => {
-        saveMobileState();
-    }, 60000);
-    
-    // تحديث الوقت الحالي
-    setInterval(() => {
-        updateCurrentTime();
-    }, 60000);
-    
-    // محفزات الخلفية النفسية
-    setInterval(() => {
-        if (!MobileState.isTimerRunning && Math.random() < 0.1) {
-            showMotivationNotification();
-        }
-    }, 300000); // كل 5 دقائق
-    
-    // تحديث مؤشر البطارية (محاكاة)
-    setInterval(() => {
-        updateBatteryIndicator();
-    }, 30000);
-}
-
-function updateCurrentTime() {
-    const timeElement = document.querySelector('.status-time');
-    if (timeElement) {
-        const now = new Date();
-        const timeString = now.toLocaleTimeString('ar-EG', { 
-            hour: '2-digit', 
-            minute: '2-digit',
-            hour12: false 
-        });
-        timeElement.textContent = timeString;
-    }
-}
-
-function updateBatteryIndicator() {
-    const batteryIcon = document.querySelector('.fa-battery-full');
-    if (batteryIcon) {
-        // محاكاة تغيير حالة البطارية
-        const levels = ['battery-empty', 'battery-quarter', 'battery-half', 'battery-three-quarters', 'battery-full'];
-        const currentLevel = batteryIcon.classList[1];
-        const currentIndex = levels.indexOf(currentLevel);
-        const nextIndex = (currentIndex + 1) % levels.length;
-        
-        batteryIcon.classList.remove(currentLevel);
-        batteryIcon.classList.add(levels[nextIndex]);
-    }
-}
-
-// ===== MOBILE FEEDBACK =====
-function showToast(message) {
-    // إزالة أي toast موجود مسبقاً
-    const existingToast = document.querySelector('.mobile-toast');
-    if (existingToast) {
-        existingToast.remove();
-    }
-    
-    // إنشاء toast جديد
-    const toast = document.createElement('div');
-    toast.className = 'mobile-toast';
-    toast.textContent = message;
-    toast.style.cssText = `
-        position: fixed;
-        bottom: 100px;
-        left: 50%;
-        transform: translateX(-50%) translateY(100px);
-        background: rgba(0, 0, 0, 0.85);
-        color: white;
-        padding: 12px 24px;
-        border-radius: 8px;
-        font-size: 14px;
-        z-index: 10000;
-        transition: transform 0.3s ease;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        max-width: 80%;
-        text-align: center;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    `;
-    
-    document.body.appendChild(toast);
-    
-    // التحريك للداخل
-    setTimeout(() => {
-        toast.style.transform = 'translateX(-50%) translateY(0)';
-    }, 10);
-    
-    // الإزالة بعد التأخير
-    setTimeout(() => {
-        toast.style.transform = 'translateX(-50%) translateY(100px)';
+    // Request notification permission on first load
+    if (Notification.permission === "default" && notificationsEnabled) {
         setTimeout(() => {
-            if (toast.parentNode) {
-                document.body.removeChild(toast);
+            Notification.requestPermission();
+        }, 2000);
+    }
+    
+    // Auto-refresh particles every minute
+    setInterval(createParticles, 60000);
+    
+    // Auto-save every 30 seconds
+    setInterval(saveToLocalStorage, 30000);
+    
+    console.log("🚀 Focus Mode Pro Initialized with 50+ Features!");
+    console.log("👨‍💻 Engineer: Kariem Tamer");
+    console.log("🎯 Version: 3.0.0");
+}
+
+function setupEventListeners() {
+    // Timer controls
+    elements.start.addEventListener('click', startTimer);
+    elements.pause.addEventListener('click', pauseTimer);
+    elements.reset.addEventListener('click', resetTimer);
+    elements.skip.addEventListener('click', skipTimer);
+    
+    // Mode buttons
+    elements.modeBtns.forEach(btn => {
+        btn.addEventListener('click', () => changeMode(btn.dataset.mode));
+    });
+    
+    // Language buttons
+    elements.langBtns.forEach(btn => {
+        btn.addEventListener('click', () => changeLanguage(btn.dataset.lang));
+    });
+    
+    // Message controls
+    elements.nextMsg.addEventListener('click', showNextMessage);
+    elements.prevMsg.addEventListener('click', showPrevMessage);
+    
+    // Modal controls
+    elements.enter.addEventListener('click', () => {
+        elements.welcome.classList.remove('active');
+        playSound('click');
+    });
+    
+    elements.cancel.addEventListener('click', () => {
+        elements.welcome.classList.remove('active');
+        playSound('click');
+    });
+    
+    elements.settingsBtn.addEventListener('click', () => {
+        elements.settings.classList.add('active');
+        playSound('click');
+    });
+    
+    elements.statsBtn.addEventListener('click', () => {
+        elements.stats.classList.add('active');
+        playSound('click');
+    });
+    
+    elements.saveSettings.addEventListener('click', saveSettings);
+    elements.closeSettings.addEventListener('click', () => {
+        elements.settings.classList.remove('active');
+        playSound('click');
+    });
+    
+    elements.closeStats.addEventListener('click', () => {
+        elements.stats.classList.remove('active');
+        playSound('click');
+    });
+    
+    elements.resetStats.addEventListener('click', resetStats);
+    
+    // Preset buttons
+    elements.presets.forEach(preset => {
+        preset.addEventListener('click', () => setPresetTime(parseInt(preset.dataset.minutes)));
+    });
+    
+    // Task controls
+    elements.addTask.addEventListener('click', addTask);
+    
+    // Footer buttons
+    elements.shareBtn.addEventListener('click', shareApp);
+    elements.fullscreenBtn.addEventListener('click', toggleFullscreen);
+    elements.musicBtn.addEventListener('click', toggleBackgroundMusic);
+    
+    // Fullscreen change event
+    document.addEventListener('fullscreenchange', () => {
+        isFullscreen = !!document.fullscreenElement;
+        elements.fullscreenBtn.innerHTML = isFullscreen ? 
+            '<i class="fas fa-compress"></i>' : 
+            '<i class="fas fa-expand"></i>';
+    });
+    
+    // Click sound for all buttons
+    document.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.id !== 'start' && btn.id !== 'pause' && btn.id !== 'reset' && btn.id !== 'skip') {
+                playSound('click');
             }
-        }, 300);
-    }, 3000);
-}
-
-function vibrateMobile(pattern) {
-    if (navigator.vibrate) {
-        try {
-            navigator.vibrate(pattern);
-        } catch (error) {
-            console.log('Vibration not supported or blocked');
-        }
-    }
-}
-
-function showMotivationNotification() {
-    if (!MobileState.notifications) return;
-    
-    const messages = MobileState.messages[MobileState.language];
-    if (!messages || messages.length === 0) return;
-    
-    const message = messages[Math.floor(Math.random() * messages.length)];
-    
-    // عرض كـ toast
-    showToast(message);
-    
-    // طلب إذن الإشعارات
-    if ('Notification' in window && Notification.permission === 'granted') {
-        try {
-            new Notification('مود التركيز', {
-                body: message,
-                icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🧠</text></svg>'
-            });
-        } catch (error) {
-            console.log('Notifications not supported');
-        }
-    }
-}
-
-function showCompletionMessage(minutes) {
-    const messages = MobileState.language === 'ar'
-        ? [`مبروك! خلصت ${minutes} دقيقة تركيز!`, `إنجاز رائع! ${minutes} دقيقة إنتاجية!`]
-        : [`Congratulations! ${minutes} minutes of focus completed!`, `Amazing work! ${minutes} productive minutes!`];
-    
-    const message = messages[Math.floor(Math.random() * messages.length)];
-    showToast(message);
-}
-
-function showRewardMessage() {
-    const messages = MobileState.language === 'ar'
-        ? ['المكافأة: عقلك بقى أقوى!', 'جائزة التركيز: انت بتبقى أفضل!']
-        : ['Reward: Your mind is stronger!', 'Focus prize: You\'re becoming better!'];
-    
-    const message = messages[Math.floor(Math.random() * messages.length)];
-    showToast(message);
-}
-
-function showLevelUpMessage() {
-    const messages = MobileState.language === 'ar'
-        ? [`مبروك! وصلت للمستوى ${MobileState.stats.level}!`, `تطور! مستوى ${MobileState.stats.level} جديد!`]
-        : [`Congratulations! Reached Level ${MobileState.stats.level}!`, `Evolution! New Level ${MobileState.stats.level}!`];
-    
-    const message = messages[Math.floor(Math.random() * messages.length)];
-    showToast(message);
-    
-    // اهتزاز الاحتفال
-    vibrateMobile([100, 50, 100, 50, 100, 50, 100]);
-}
-
-function triggerMobileCelebration() {
-    // إضافة فئة الاحتفال
-    document.body.classList.add('celebration');
-    
-    // إزالة الفئة بعد الانتهاء من التحريك
-    setTimeout(() => {
-        document.body.classList.remove('celebration');
-    }, 2000);
-}
-
-// ===== SCREEN LOCK PREVENTION =====
-let wakeLock = null;
-
-async function preventScreenLock() {
-    if ('wakeLock' in navigator) {
-        try {
-            wakeLock = await navigator.wakeLock.request('screen');
-            console.log('🔒 منع قفل الشاشة مفعل');
-        } catch (err) {
-            console.log('❌ تعذر منع قفل الشاشة');
-        }
-    }
-}
-
-function allowScreenLock() {
-    if (wakeLock !== null) {
-        wakeLock.release().then(() => {
-            wakeLock = null;
-            console.log('🔓 السماح بقفل الشاشة');
         });
-    }
-}
-
-// ===== RESPONSIVE IMPROVEMENTS =====
-function setupResponsiveBehavior() {
-    // تحديث حجم الخطوط بناءً على حجم الشاشة
-    function updateFontSizes() {
-        const width = window.innerWidth;
-        const baseSize = 16;
-        let scale = 1;
-        
-        if (width < 320) scale = 0.85;  // شاشات صغيرة جداً
-        if (width >= 320 && width < 375) scale = 0.9;  // iPhone SE
-        if (width >= 375 && width < 414) scale = 1;    // iPhone X/11/12
-        if (width >= 414 && width < 768) scale = 1.1;  // iPhone Pro Max
-        
-        document.documentElement.style.fontSize = `${baseSize * scale}px`;
-    }
-    
-    // تحديث حجم التايمر بناءً على حجم الشاشة
-    function updateTimerSize() {
-        const timerCircle = document.querySelector('.timer-circle');
-        if (!timerCircle) return;
-        
-        const width = window.innerWidth;
-        let size = 280; // الحجم الافتراضي
-        
-        if (width < 320) size = 220;
-        if (width >= 320 && width < 375) size = 240;
-        if (width >= 375 && width < 414) size = 260;
-        if (width >= 414 && width < 768) size = 280;
-        
-        timerCircle.style.width = `${size}px`;
-        timerCircle.style.height = `${size}px`;
-        
-        // تحديث SVG أيضًا
-        const svg = timerCircle.querySelector('svg');
-        if (svg) {
-            svg.setAttribute('width', size);
-            svg.setAttribute('height', size);
-            svg.setAttribute('viewBox', `0 0 ${size} ${size}`);
-            
-            // تحديد دائرة نصف قطرها
-            const radius = size / 2 - 10;
-            const circles = svg.querySelectorAll('circle');
-            circles.forEach(circle => {
-                circle.setAttribute('r', radius);
-                circle.setAttribute('cx', size / 2);
-                circle.setAttribute('cy', size / 2);
-            });
-        }
-    }
-    
-    // تحديث تخطيط الشبكة بناءً على حجم الشاشة
-    function updateGridLayout() {
-        const boostersGrid = document.querySelector('.boosters-grid');
-        if (!boostersGrid) return;
-        
-        const width = window.innerWidth;
-        
-        if (width < 375) {
-            boostersGrid.style.gridTemplateColumns = '1fr';
-        } else {
-            boostersGrid.style.gridTemplateColumns = 'repeat(2, 1fr)';
-        }
-    }
-    
-    // استدعاء جميع الدوال عند التحميل وعند تغيير الحجم
-    updateFontSizes();
-    updateTimerSize();
-    updateGridLayout();
-    
-    window.addEventListener('resize', () => {
-        updateFontSizes();
-        updateTimerSize();
-        updateGridLayout();
     });
 }
 
-// ===== INITIALIZE APP =====
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 بدء تحميل التطبيق...');
-    
-    // تهيئة السلوك المتجاوب
-    setupResponsiveBehavior();
-    
-    // إعداد تدرج SVG للتايمر
-    setupSVGGradient();
-    
-    // تهيئة التطبيق مع تأخير بسيط
-    setTimeout(() => {
-        initMobileApp();
-        console.log('🎉 التطبيق يعمل الآن!');
-        
-        // إضافة CSS إضافي للتحسينات
-        addResponsiveCSS();
-    }, 500);
-});
-
-function setupSVGGradient() {
-    const svg = document.querySelector('svg');
-    if (svg) {
-        // التحقق من وجود التدرج بالفعل
-        let defs = svg.querySelector('defs');
-        if (!defs) {
-            defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-            svg.insertBefore(defs, svg.firstChild);
-        }
-        
-        let gradient = defs.querySelector('#timer-gradient');
-        if (!gradient) {
-            gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
-            gradient.id = 'timer-gradient';
-            gradient.setAttribute('x1', '0%');
-            gradient.setAttribute('y1', '0%');
-            gradient.setAttribute('x2', '100%');
-            gradient.setAttribute('y2', '100%');
-            
-            const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
-            stop1.setAttribute('offset', '0%');
-            stop1.setAttribute('stop-color', '#00ffcc');
-            
-            const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
-            stop2.setAttribute('offset', '100%');
-            stop2.setAttribute('stop-color', '#0099ff');
-            
-            gradient.appendChild(stop1);
-            gradient.appendChild(stop2);
-            defs.appendChild(gradient);
-        }
-        
-        // تطبيق التدرج على دوائر التقدم
-        const progressCircles = document.querySelectorAll('.progress-ring-fill');
-        progressCircles.forEach(circle => {
-            circle.setAttribute('stroke', 'url(#timer-gradient)');
-        });
-    }
+// ===== START APPLICATION =====
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
 }
 
-function addResponsiveCSS() {
-    const style = document.createElement('style');
-    style.textContent = `
-        /* تحسينات الـ Responsiveness */
-        @media (max-width: 320px) {
-            .timer-circle {
-                width: 220px !important;
-                height: 220px !important;
-            }
-            
-            .time-display {
-                font-size: 2.5rem !important;
-            }
-            
-            .activity {
-                min-width: 100px !important;
-            }
-            
-            .control-btn {
-                padding: 0.5rem !important;
-                font-size: 0.75rem !important;
-            }
-        }
-        
-        @media (max-width: 375px) {
-            .timer-circle {
-                width: 240px !important;
-                height: 240px !important;
-            }
-            
-            .time-display {
-                font-size: 2.75rem !important;
-            }
-            
-            .boosters-grid {
-                grid-template-columns: 1fr !important;
-            }
-        }
-        
-        @media (min-width: 768px) {
-            .app-container {
-                max-width: 768px !important;
-                margin: 0 auto !important;
-                border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
-                border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
-            }
-        }
-        
-        /* منع التمرير الأفقي للصفحة */
-        html, body {
-            overflow-x: hidden !important;
-            max-width: 100% !important;
-        }
-        
-        /* السماح بالتمرير الأفقي فقط للعناصر المحددة */
-        .activities-scroll,
-        .tips-scroll {
-            overflow-x: auto !important;
-            -webkit-overflow-scrolling: touch !important;
-        }
-        
-        /* إخفاء شريط التمرير في العناصر */
-        .activities-scroll::-webkit-scrollbar,
-        .tips-scroll::-webkit-scrollbar {
-            height: 4px !important;
-        }
-        
-        .activities-scroll::-webkit-scrollbar-track,
-        .tips-scroll::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1) !important;
-            border-radius: 2px !important;
-        }
-        
-        .activities-scroll::-webkit-scrollbar-thumb,
-        .tips-scroll::-webkit-scrollbar-thumb {
-            background: rgba(0, 255, 204, 0.3) !important;
-            border-radius: 2px !important;
-        }
-        
-        /* تحسينات للمس */
-        button, .activity, .booster, .nav-item {
-            touch-action: manipulation !important;
-            -webkit-tap-highlight-color: transparent !important;
-        }
-        
-        /* تحسين التحميل */
-        .app-container {
-            opacity: 0;
-            animation: fadeIn 0.5s ease forwards !important;
-        }
-        
-        @keyframes fadeIn {
-            to {
-                opacity: 1;
-            }
-        }
-        
-        /* تحسينات وضع التركيز */
-        .focus-mode-active {
-            overflow: hidden !important;
-        }
-        
-        .focus-overlay.active {
-            animation: fadeIn 0.3s ease !important;
-        }
-        
-        /* تحسينات الصوت والاهتزاز */
-        @media (prefers-reduced-motion: reduce) {
-            * {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-            }
-        }
-    `;
-    document.head.appendChild(style);
-}
-
-// معالجة أخطاء التطبيق
-window.addEventListener('error', (e) => {
-    console.error('📱 خطأ في التطبيق:', e.error);
-    
-    // عرض رسالة خطأ ودية
-    showToast(MobileState.language === 'ar'
-        ? 'حصل خطأ بسيط. جاري إعادة التحميل...'
-        : 'Minor error. Reloading...');
-    
-    // محاولة الاسترداد
-    setTimeout(() => {
-        try {
-            location.reload();
-        } catch (reloadError) {
-            console.error('فشل إعادة التحميل:', reloadError);
-        }
-    }, 3000);
-});
-
-// معالجة زر الرجوع في Android
-window.addEventListener('popstate', (e) => {
-    if (mobileDOM.focusOverlay && mobileDOM.focusOverlay.classList.contains('active')) {
-        e.preventDefault();
-        showToast(MobileState.language === 'ar'
-            ? 'مينفعش تخرج من مود التركيز!'
-            : 'Can\'t exit focus mode!');
-    }
-});
-
-// إيقاف المؤقت عند خروج التطبيق للخلفية
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden && MobileState.isTimerRunning) {
-        // الإيقاف التلقائي بعد 30 ثانية في الخلفية
-        const pauseTimeout = setTimeout(() => {
-            if (document.hidden && MobileState.isTimerRunning) {
-                pauseMobileTimer();
-                showToast(MobileState.language === 'ar'
-                    ? 'التايمر اتوقف عشان التطبيق كان في الخلفية'
-                    : 'Timer paused because app was in background');
-            }
-        }, 30000);
-        
-        // تنظيف المؤقت عندما يعود التطبيق للواجهة
-        document.addEventListener('visibilitychange', function cleanup() {
-            if (!document.hidden) {
-                clearTimeout(pauseTimeout);
-                document.removeEventListener('visibilitychange', cleanup);
-            }
-        }, { once: true });
-    }
-});
-
-// إضافة حدث لتحميل الصفحة بالكامل
-window.addEventListener('load', () => {
-    console.log('📱 تم تحميل الصفحة بالكامل');
-    
-    // تحديث الوقت الحالي فوراً
-    updateCurrentTime();
-    
-    // تحديث مؤشر البطارية
-    updateBatteryIndicator();
-});
+// ===== MAKE FUNCTIONS GLOBALLY AVAILABLE =====
+window.toggleTask = toggleTask;
+window.deleteTask = deleteTask;
